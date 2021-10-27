@@ -2,9 +2,10 @@ import numpy as np
 class UserInputArgs(object):
 	def __init__(self):
 		self.training_mode = False #set to True to train. Otherwise skip training and just loads a previous one
-		self.model_to_load = "recently_trained_model.pt" # "recently_trained_model.pt" is default and
-		#always used if training_mode=True
-		#otherwise, specify something else. It will be saved in my custom class SavedLSTM--> using pickle, which comes with python.
+		self.model_load_filename = "recently_trained_model" # "recently_trained_model" is default and
+		#always used if training_mode=True. Specify something else if you want and training_mode=False.
+		self.model_save_filename = "recently_trained_model" #the name of the file that will be saved as class SavedLSTM.
+		#model is only saved when training_mode=True
 		self.input_option = 3 #1=Just SimpleCode; 2=Just Wave Height; 3=SimpleCode and Wave Height
 		self.time_res = 9 #integers only, Time resolution; 1 means every point, 2 means every other, etc.
 		self.seq_length = 17990//self.time_res
@@ -14,7 +15,7 @@ class UserInputArgs(object):
 		self.bi_directional = False
 		self.dropout = 0
 		self.lr = 0.005
-		self.epochs = 10000 #maximum
+		self.epochs = 100 #maximum
 		self.train_fun_hyp = [0, 0, 0] 
 		self.val_fun_hyp   = [0, 0, 0] # First index is type of loss function.
 		# Others are hyper parameters pertaining to the loss function specified.
@@ -51,12 +52,12 @@ class PlottingArgs(object):
 		self.prediction_ID_list_test will plot the first realization in the test set.
 		'''
 		self.prediction_ID_list_train = [0] #for plotting the LSTM heave, roll, pitch and compare to SC & LAMP
-		self.prediction_ID_list_val   = [1]
-		self.prediction_ID_list_test  = [2]
+		self.prediction_ID_list_val   = [1,2]
+		self.prediction_ID_list_test  = []
 
-		self.error_ID_list_train      = [0] #for the error plots
-		self.error_ID_list_val        = [1]
-		self.error_ID_list_test       = [2]
+		self.error_ID_list_train      = [] #for the error plots
+		self.error_ID_list_val        = []
+		self.error_ID_list_test       = [0,1,2]
 
 		self.maxima_ID_list_train     = [0,1,2,3,4,5] #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
 		self.maxima_ID_list_val       = [0,1,2,3] 

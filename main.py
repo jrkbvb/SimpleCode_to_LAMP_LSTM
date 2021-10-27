@@ -15,10 +15,14 @@ from print_error_report import print_error_report
 from input_template import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
+from save_lstm import save_lstm_info, load_lstm_info
 
 print("Cuda available:", torch.cuda.is_available())
 if torch.cuda.is_available():
 	torch.cuda.empty_cache() #to avoid some rare errors.
+
+# Check if using CPU or GPU
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Set parameters
 args = UserInputArgs()
@@ -26,10 +30,22 @@ plot_args = PlottingArgs()
 data_info_args = DataInfoArgs()
 derived_args = DerivedArgs(args, data_info_args)
 
+#either load in a saved network or create a new one for training
+if args.training_mode==False:
+	network, wave_mean, wave_std = load_lstm_info(args)
+	network.to(device)
+elif args.training_mode==True:
+	# create an instance of our LSTM network
+	network = LSTM(args.input_size, args.hidden_size, args.num_layers, args.output_size, args.bi_directional, args.dropout).to(device)
+
 # Read in and Standardize the data. Each input & target is formatted:
 # [num_realizations, full series length (17990), num_parameters]
-print("\nLoading Training Data")
-train_input, train_target, wave_mean, wave_std 	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args)
+if args.training_mode==False:
+	print("\nLoading Training Data")
+	train_input, train_target	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args, wave_mean, wave_std)
+elif args.training_mode==True:
+	print("\nLoading Training Data")
+	train_input, train_target, wave_mean, wave_std 	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args)
 print("\nLoading Validation Data")
 val_input,   val_target 						= load_and_standardize(data_info_args.val_sc, data_info_args.val_lamp, args, wave_mean, wave_std)
 print("\nLoading Testing Data")
@@ -58,12 +74,6 @@ print(f"val_target has shape 	{val_target.shape}")
 print(f"test_input has shape 	{test_input.shape}")
 print(f"test_target has shape 	{test_target.shape}")
 
-# Check if using CPU or GPU
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-# create an instance of our LSTM network
-network = LSTM(args.input_size, args.hidden_size, args.num_layers, args.output_size, args.bi_directional, args.dropout).to(device)
-
 # initialize our optimizer. We'll use Adam
 optimizer = torch.optim.Adam(network.parameters(), lr=args.lr)
 
@@ -85,12 +95,8 @@ if args.training_mode==True:
 	    	break
 	    print('Train Epoch: {:02d} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 	print("Training Done\n")
-
-#Load in the best or desired model parameters
-if args.training_mode==True:
 	network.load_state_dict(torch.load("recently_trained_model.pt")) # restoring the best found network based on validation data
-else:
-	network.load_state_dict(torch.load(args.model_to_load)) # restoring the best found network based on validation data
+	save_lstm_info(network.state_dict(), args, data_info_args, wave_mean, wave_std)	
 
 #re-doing the loaders to be in batch sizes of 1. 
 ### For the moment this is necessary with getting the outputs put back together in test(). I'll fix this in the future probably ###
