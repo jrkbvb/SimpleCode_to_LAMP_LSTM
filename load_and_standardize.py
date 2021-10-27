@@ -38,6 +38,8 @@ def load_and_standardize(simple_filenames, lamp_filenames, args, wave_mean=None,
 		zcg_std  = np.std(lstm_inputs[i:(i+1), :, 0])
 		roll_mean = np.mean(lstm_inputs[i:(i+1), :, 1])
 		roll_std  = np.std(lstm_inputs[i:(i+1), :, 1])
+		if roll_std<=.00001:
+			roll_std=1 #for head on waves, all roll is zero, no need to standardize
 		pitch_mean = np.mean(lstm_inputs[i:(i+1), :, 2])
 		pitch_std  = np.std(lstm_inputs[i:(i+1), :, 2])
 		

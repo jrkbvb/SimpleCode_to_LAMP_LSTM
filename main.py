@@ -12,7 +12,7 @@ from network_models import LSTM
 from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
-from input_template import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
+from input_polarset1 import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
