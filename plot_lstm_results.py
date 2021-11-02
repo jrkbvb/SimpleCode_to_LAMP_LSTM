@@ -128,14 +128,15 @@ def error_plot(target, lstm_output, plot_args, sc_filepath):
 	axs2[0, 1].set(xlabel="LAMP Zcg at Peak (meters)", ylabel="Model Error at LAMP Peak (meters)")
 	axs2[0, 1].set_ylim([-(np.max(np.absolute(simple_error[zcg_peak_idx,0]))+0.2), np.max(np.absolute(simple_error[zcg_peak_idx,0]))+0.2])
 
-	axs2[1, 1].scatter(lamp_data[ roll_peak_idx, 1], simple_error[ roll_peak_idx, 1], s=1, color=plot_args.simple_color)
-	axs2[1, 1].scatter(lamp_data[ roll_peak_idx, 1], lstm_error[ roll_peak_idx, 1], s=1, color=plot_args.lstm_color)	
-	axs2[1, 1].legend(["SIMPLE","SIMPLE + LSTM correction"])
-	axs2[1, 1].title.set_text("Roll Model Errors at Peaks\n SIMPLE Abolute Error Max={:.3f},    Mean={:.3f},    STD={:.3f} \n LSTM Absolute Error Max={:.3f},    Mean={:.3f},    STD={:.3f}".format(
-		np.max(np.absolute(simple_error[roll_peak_idx,1])), np.mean(np.absolute(simple_error[roll_peak_idx,1])), np.std(np.absolute(simple_error[roll_peak_idx,1])),
-		np.max(np.absolute(lstm_error[roll_peak_idx,1])), np.mean(np.absolute(lstm_error[roll_peak_idx,1])), np.std(np.absolute(lstm_error[roll_peak_idx,1]))))
-	axs2[1, 1].set(xlabel="LAMP Roll at Peak (degrees)", ylabel="Model Error at LAMP Peak (degrees)")
-	axs2[1, 1].set_ylim([-(np.max(np.absolute(simple_error[roll_peak_idx,1]))+0.2), np.max(np.absolute(simple_error[roll_peak_idx,1]))+0.2])
+	if not len(roll_peak_idx)==0:
+		axs2[1, 1].scatter(lamp_data[ roll_peak_idx, 1], simple_error[ roll_peak_idx, 1], s=1, color=plot_args.simple_color)
+		axs2[1, 1].scatter(lamp_data[ roll_peak_idx, 1], lstm_error[ roll_peak_idx, 1], s=1, color=plot_args.lstm_color)	
+		axs2[1, 1].legend(["SIMPLE","SIMPLE + LSTM correction"])
+		axs2[1, 1].title.set_text("Roll Model Errors at Peaks\n SIMPLE Abolute Error Max={:.3f},    Mean={:.3f},    STD={:.3f} \n LSTM Absolute Error Max={:.3f},    Mean={:.3f},    STD={:.3f}".format(
+			np.max(np.absolute(simple_error[roll_peak_idx,1])), np.mean(np.absolute(simple_error[roll_peak_idx,1])), np.std(np.absolute(simple_error[roll_peak_idx,1])),
+			np.max(np.absolute(lstm_error[roll_peak_idx,1])), np.mean(np.absolute(lstm_error[roll_peak_idx,1])), np.std(np.absolute(lstm_error[roll_peak_idx,1]))))
+		axs2[1, 1].set(xlabel="LAMP Roll at Peak (degrees)", ylabel="Model Error at LAMP Peak (degrees)")
+		axs2[1, 1].set_ylim([-(np.max(np.absolute(simple_error[roll_peak_idx,1]))+0.2), np.max(np.absolute(simple_error[roll_peak_idx,1]))+0.2])
 
 	axs2[2, 1].scatter(lamp_data[ pitch_peak_idx, 2], simple_error[ pitch_peak_idx, 2], s=1, color=plot_args.simple_color)
 	axs2[2, 1].scatter(lamp_data[ pitch_peak_idx, 2], lstm_error[ pitch_peak_idx, 2], s=1, color=plot_args.lstm_color)	

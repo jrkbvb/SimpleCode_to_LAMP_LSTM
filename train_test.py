@@ -24,17 +24,17 @@ def train(model, device, train_loader, optimizer, obj_fun_hyp):
 
     # We'll iterate through each batch. One call of train() trains for 1 epoch.
     # batch_idx: an integer representing which batch number we're on
-    # input: a pytorch tensor representing a batch of input sequences.
-    for batch_idx, (input,target) in enumerate(train_loader):
+    # inpt: a pytorch tensor representing a batch of inpt sequences.
+    for batch_idx, (inpt,target) in enumerate(train_loader):
         # This line sends data to GPU if you're using a GPU
-        input = input.to(device, dtype=torch.float)
+        inpt = inpt.to(device, dtype=torch.float)
         target = target.to(device, dtype=torch.float)
 
         # initialze the optimizer
         optimizer.zero_grad()
 
-        # feed our input through the network
-        output = model.forward(input)
+        # feed our inpt through the network
+        output = model.forward(inpt)
 
         #calculate the loss
         loss_function = objective_function
@@ -64,28 +64,31 @@ def test(model, device, val_loader, obj_fun_hyp, num_realizations=0, time_res=1,
     test_loss = 0
 
     if return_output:
-    	for (input,target) in val_loader:
-    		realization_length = np.asarray(target).shape[1]*time_res
-    		break
-    	saved_output = np.zeros((num_realizations, realization_length, 3)) #3 = Zcg, roll, pitch
+        shape0 = 0
+        for (inpt,target) in val_loader:
+            shape0 += np.asarray(target).shape[0]
+            shape1 = np.asarray(target).shape[1]
+        saved_output = np.zeros((shape0, shape1, 3)) #3 = Zcg, roll, pitch
+        idx0_start = 0
 
     #don't perform backprop if testing
     with torch.no_grad():
         # iterate thorugh each test image
-        for batch_idx, (input,target) in enumerate(val_loader):
-            # send input image to GPU if using GPU
-            
-            input = input.to(device, dtype=torch.float)
+        for batch_idx, (inpt,target) in enumerate(val_loader):
+            # send inpt image to GPU if using GPU            
+            inpt = inpt.to(device, dtype=torch.float)
             target = target.to(device, dtype=torch.float)
 
-            # run input through our model
-            output = model.forward(input)
+            # run inpt through our model
+            output = model.forward(inpt)
             loss_function = objective_function
             loss_value = loss_function(output, target, obj_fun_hyp) 
             test_loss += loss_value
 
             if return_output:
-            	saved_output[ batch_idx%num_realizations, batch_idx//num_realizations::time_res ,:] = output.cpu() # For a complete end-to-end time series
+                idx0_end = idx0_start+inpt.size(dim=0)
+                saved_output[ idx0_start:idx0_end, : ,:] = output.cpu() # For a complete end-to-end time series
+                idx0_start = idx0_end
     test_loss /= len(val_loader)
     if return_output:
     	return saved_output

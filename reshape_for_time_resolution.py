@@ -22,8 +22,9 @@ def reshape_for_time_resolution(lstm_inputs, target_outputs, time_res):
 	labels = target_outputs[:, :end_idx, :].reshape(-1, end_idx//time_res, 3, order='F')
 	return data, labels
 
-def reshape_full_series(lstm_inputs, target_outputs, time_res):
+def reshape_full_series(lstm_inputs, target_outputs, lstm_outputs, time_res):
 	num_realizations = lstm_inputs.shape[0]//time_res
 	data = lstm_inputs.reshape(num_realizations,-1, 4, order='F')
 	labels = target_outputs.reshape(num_realizations,-1, 3, order='F')
-	return data, labels
+	outputs = lstm_outputs.reshape(num_realizations, -1, 3, order='F')
+	return data, labels, outputs

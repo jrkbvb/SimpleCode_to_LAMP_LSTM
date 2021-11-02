@@ -137,6 +137,6 @@ class DerivedArgs(object):
 		self.num_val_realizations   = len(data_info.val_lamp)
 		self.num_test_realizations  = len(data_info.test_lamp)
 		self.num_realizations = self.num_train_realizations + self.num_val_realizations + self.num_test_realizations
-		self.train_batch_size = self.num_train_realizations*usr_args.time_res//usr_args.num_batches #for six training batches
+		self.train_batch_size = -(-(self.num_train_realizations*usr_args.time_res)//usr_args.num_batches) #ceiling division
 		self.val_batch_size = self.num_val_realizations*usr_args.time_res
 		self.test_batch_size = self.num_test_realizations*usr_args.time_res

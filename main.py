@@ -12,6 +12,7 @@ from network_models import LSTM
 from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
+#On the line below, specifiy after "from" which file the user inputs are coming from.
 from input_polarset1 import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
@@ -30,13 +31,13 @@ plot_args = PlottingArgs()
 data_info_args = DataInfoArgs()
 derived_args = DerivedArgs(args, data_info_args)
 
+
+
 #either load in a saved network or create a new one for training
+#creating a new one for training_mode==True can be done later, and is more convenient for optimizing hyper-parameters
 if args.training_mode==False:
 	network, wave_mean, wave_std = load_lstm_info(args)
 	network.to(device)
-elif args.training_mode==True:
-	# create an instance of our LSTM network
-	network = LSTM(args.input_size, args.hidden_size, args.num_layers, args.output_size, args.bi_directional, args.dropout).to(device)
 
 # Read in and Standardize the data. Each input & target is formatted:
 # [num_realizations, full series length (17990), num_parameters]
@@ -51,6 +52,12 @@ val_input,   val_target 						= load_and_standardize(data_info_args.val_sc, data
 print("\nLoading Testing Data")
 test_input,  test_target 						= load_and_standardize(data_info_args.test_sc, data_info_args.test_lamp, args, wave_mean, wave_std)
 
+#START TIME_RES LOOP, HIDDEN_SIZE, AND NUM_LAYERS HERE
+
+if args.training_mode==True:
+	# create an instance of our LSTM network
+	network = LSTM(args.input_size, args.hidden_size, args.num_layers, args.output_size, args.bi_directional, args.dropout).to(device)
+
 # Reshape the data to take into account the time resolution
 train_input, train_target 	= reshape_for_time_resolution(train_input, train_target, args.time_res)
 val_input,   val_target 	= reshape_for_time_resolution(val_input,   val_target,   args.time_res)
@@ -64,6 +71,7 @@ test_dataset  = S2LDataset(test_input, test_target)
 # Create a PyTorch dataloader for each train/val set. Test set isn't needed until later
 train_loader = DataLoader(train_dataset, batch_size=derived_args.train_batch_size, shuffle=True)
 val_loader   = DataLoader(val_dataset,   batch_size=derived_args.val_batch_size)
+test_loader   = DataLoader(test_dataset,   batch_size=derived_args.test_batch_size)
 
 # Display dataset information
 print("\nReshaped the following data:")
@@ -98,13 +106,8 @@ if args.training_mode==True:
 	network.load_state_dict(torch.load("recently_trained_model.pt")) # restoring the best found network based on validation data
 	save_lstm_info(network.state_dict(), args, data_info_args, wave_mean, wave_std)	
 
-#re-doing the loaders to be in batch sizes of 1. 
-### For the moment this is necessary with getting the outputs put back together in test(). I'll fix this in the future probably ###
-train_loader = DataLoader(train_dataset, batch_size=1)
-val_loader   = DataLoader(val_dataset,   batch_size=1)
-test_loader  = DataLoader(test_dataset,  batch_size=1)
-
 #Produce final LSTM output
+train_loader = DataLoader(train_dataset, batch_size=derived_args.train_batch_size) #now with shuffle off so everything is ordered correctly
 start_time = time.time() #to show how long it takes to run the series through
 train_lstm_output	= test(network, device, train_loader, args.val_fun_hyp, derived_args.num_train_realizations, args.time_res, True)
 val_lstm_output 	= test(network, device, val_loader,   args.val_fun_hyp, derived_args.num_val_realizations,   args.time_res, True)
@@ -116,9 +119,9 @@ print("test output shape ", test_lstm_output.shape)
 print("Time to produce output for ", derived_args.num_realizations," realizations:", (end_time-start_time))
 
 #Reshape our input and targets to be same shape as output
-train_input, train_target 	= reshape_full_series(train_input, train_target, args.time_res)
-val_input,   val_target 	= reshape_full_series(val_input,   val_target,   args.time_res)
-test_input,  test_target 	= reshape_full_series(test_input,  test_target,  args.time_res)
+train_input, train_target, train_lstm_output 	= reshape_full_series(train_input, train_target, train_lstm_output, args.time_res)
+val_input,   val_target, val_lstm_output 	= reshape_full_series(val_input,   val_target,   val_lstm_output, args.time_res)
+test_input,  test_target, test_lstm_output 	= reshape_full_series(test_input,  test_target,  test_lstm_output, args.time_res)
 
 #Print Final Errors
 print("\nSimpleCode Error Results:")
