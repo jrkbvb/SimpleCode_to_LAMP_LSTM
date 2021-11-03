@@ -134,3 +134,5 @@ plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_
 
 #Save Results
 save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args)
+
+plt.show()

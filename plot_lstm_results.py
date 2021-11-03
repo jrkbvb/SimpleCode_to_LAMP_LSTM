@@ -24,8 +24,7 @@ def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, 
 		error_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i])
 
 	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args)
-
-	plt.show()
+	plt.draw()
 
 
 def prediction_plot(target, lstm_output, plot_args, sc_filepath):
