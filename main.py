@@ -13,7 +13,7 @@ from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
 #On the line below, specifiy after "from" which file the user inputs are coming from.
-from input_polarset1 import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
+from input_polarset1_wavegrid import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
@@ -30,8 +30,6 @@ args = UserInputArgs()
 plot_args = PlottingArgs()
 data_info_args = DataInfoArgs()
 derived_args = DerivedArgs(args, data_info_args)
-
-
 
 #either load in a saved network or create a new one for training
 #creating a new one for training_mode==True can be done later, and is more convenient for optimizing hyper-parameters
@@ -59,9 +57,9 @@ if args.training_mode==True:
 	network = LSTM(args.input_size, args.hidden_size, args.num_layers, args.output_size, args.bi_directional, args.dropout).to(device)
 
 # Reshape the data to take into account the time resolution
-train_input, train_target 	= reshape_for_time_resolution(train_input, train_target, args.time_res)
-val_input,   val_target 	= reshape_for_time_resolution(val_input,   val_target,   args.time_res)
-test_input,  test_target 	= reshape_for_time_resolution(test_input,  test_target,  args.time_res)
+train_input, train_target 	= reshape_for_time_resolution(train_input, train_target, args)
+val_input,   val_target 	= reshape_for_time_resolution(val_input,   val_target,   args)
+test_input,  test_target 	= reshape_for_time_resolution(test_input,  test_target,  args)
 
 # Create Dataset objects for each of our train/val/test sets
 train_dataset = S2LDataset(train_input, train_target)
@@ -119,9 +117,9 @@ print("test output shape ", test_lstm_output.shape)
 print("Time to produce output for ", derived_args.num_realizations," realizations:", (end_time-start_time))
 
 #Reshape our input and targets to be same shape as output
-train_input, train_target, train_lstm_output 	= reshape_full_series(train_input, train_target, train_lstm_output, args.time_res)
-val_input,   val_target, val_lstm_output 	= reshape_full_series(val_input,   val_target,   val_lstm_output, args.time_res)
-test_input,  test_target, test_lstm_output 	= reshape_full_series(test_input,  test_target,  test_lstm_output, args.time_res)
+train_input, train_target, train_lstm_output 	= reshape_full_series(train_input, train_target, train_lstm_output, args)
+val_input,   val_target, val_lstm_output 	= reshape_full_series(val_input,   val_target,   val_lstm_output, args)
+test_input,  test_target, test_lstm_output 	= reshape_full_series(test_input,  test_target,  test_lstm_output, args)
 
 #Print Final Errors
 print("\nSimpleCode Error Results:")

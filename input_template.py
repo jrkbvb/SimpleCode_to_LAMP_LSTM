@@ -37,9 +37,9 @@ class UserInputArgs(object):
 		if self.input_option==1:
 			self.input_size = 3 #Zcg, Roll, Pitch
 		elif self.input_option==2:
-			self.input_size = 1 #Wave Height
+			self.input_size = self.wave_grid_x_size*self.wave_grid_y_size #Wave Height
 		elif self.input_option==3:
-			self.input_size = 4 #Zcg, Roll, Pitch, & Wave Height
+			self.input_size = 3 + self.wave_grid_x_size*self.wave_grid_y_size #Zcg, Roll, Pitch, & Wave Height
 		self.output_size = 3 #Zcg, Roll and Pitch; 3 by default
 		
 

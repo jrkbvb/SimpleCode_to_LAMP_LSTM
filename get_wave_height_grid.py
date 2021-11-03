@@ -1,13 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def get_wave_elevation(A, B, w, th, x, y, t, ramp_up_time):
-	'''returns a single wave elevation using equation 89 from volume XII of LAMP manual, assuming deep water'''
-	k = w**2 / 9.807 #g=9.807
-	wave_elevation = A*np.cos(k*(x*np.cos(np.radians(B)) + y*np.sin(np.radians(B))) - w*t + np.radians(th))
-	return wave_elevation
-
-def get_wave_height_grid(x_center, y_center, t, x_length, y_length, d, sea_file, ramp_up_time):
+def get_wave_height_grid(x_center, y_center, t, x_length, y_length, dx, dy, seaway, ramp_up_time):
 	'''Returns a 2-D numpy array (matrix) of wave heights centered at (y_center,x_center).
 	Note that the order of (y,x) follows the numpy array of (rows, columns).
 	So when viewing the matrix, y increases going down and x increases going right.
@@ -25,28 +19,60 @@ def get_wave_height_grid(x_center, y_center, t, x_length, y_length, d, sea_file,
 		return
 
 	#First read in the .sea file to get all the wave components
-	wave_grid = np.zeros((y_length, x_length))
-	x0 = x_center - d*(x_length-1)/2
-	y0 = y_center - d*(y_length-1)/2
-
-	for i in range(y_length):
-		y = y0 + i*d
-		for j in range(x_length):
-			x = x0 + j*d
-			height = 0
-			for n in range(seaway.shape[0]):
-				w = seaway[n,0] #frequency
-				th = seaway[n,1]#phase angle
-				A = seaway[n,2] #amplitude
-				B = seaway[n,3] #heading angle
-				height += get_wave_elevation(A, B, w, th, x, y, t, ramp_up_time)
-			if t<ramp_up_time:
-				height *= t/ramp_up_time
-			wave_grid[i,j] = height
-
+	x0 = x_center - dx*(x_length-1)/2
+	y0 = y_center - dy*(y_length-1)/2
+	x = np.linspace(x0, x0+x_length*dx, num=x_length, endpoint=False)
+	y = np.linspace(y0, y0+y_length*dy, num=y_length, endpoint=False)
+	i = np.arange(0,seaway.shape[0])
+	xx, yy, ii = np.meshgrid(x, y, i, sparse=True)
+	w = seaway[:,0] #frequency
+	th = seaway[:,1]#phase angle
+	A = seaway[:,2] #amplitude
+	B = seaway[:,3] #heading angle
+	wave_grid = A[ii]*np.cos((w[ii]**2 / 9.807)*(xx*np.cos(np.radians(B[ii])) + yy*np.sin(np.radians(B[ii]))) - w[ii]*t + np.radians(th[ii]))
+	wave_grid = wave_grid.sum(axis=2)
+	if t<ramp_up_time:
+		wave_grid *= t/ramp_up_time
 	return wave_grid
 
+def generate_wave_grid_file(lamp_file, x_length, y_length, dx, dy, ramp_up_time):
+	'''Saves a new text file with the name "lamp_file.wave_grid".
+	This file will have one row for every time segment. Each row is a 
+	flattened array of the wave grid. The lamp_file.mot is used to get the x
+	and y coordinates of the center of gravity (grid center point).
+	x_length = number of points to include in the x-direction.
+	y_length = number of points to include in the y-direction.
+	d = distance in meters between grid points'''
+	xy_coord = np.loadtxt(lamp_file+".mot",skiprows=3)[:,1:3] #all the rows, 2nd and 3rd cols
+	seaway = np.loadtxt(lamp_file+".sea", skiprows=6)
+	num_time_steps = xy_coord.shape[0]
+	all_wave_grids = np.zeros((num_time_steps, x_length*y_length))
+	for t in range(num_time_steps):
+		time = t/10
+		wave_grid = get_wave_height_grid(xy_coord[t,0], xy_coord[t,1], time, x_length, y_length, dx, dy, seaway, ramp_up_time)
+		all_wave_grids[t,:] = wave_grid.flatten()
+
+	np.savetxt(lamp_file+".wave_grid", all_wave_grids, delimiter=' ')
+
+
+
 ###### TEST #####
+lamp_file_base = "D:/LAMP/SJ_version/output_files/polar_set1_115H_164T/L2_115H_164T_"
+x_length = 3
+y_length = 3
+dx = 39
+dy = 5
+ramp_up_time = 10
+for speed in range(0,21,5):
+	print("speed = ", speed)
+	for angle in range(0,360,15):
+		print("angle = ", angle)
+		for seed in range(1,12):
+			print("seed = ", seed)
+			lamp_file = lamp_file_base + str(speed) + "kt_" + str(angle) + "deg_0" + str(seed)
+			generate_wave_grid_file(lamp_file, x_length, y_length, dx, dy, ramp_up_time)
+
+'''
 x_center = 0
 y_center = 0
 x_length = 1
@@ -75,3 +101,4 @@ plt.figure()
 plt.plot(correct_answers)
 plt.plot(my_wave_grid)
 plt.show()
+'''

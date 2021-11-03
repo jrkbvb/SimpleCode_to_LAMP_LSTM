@@ -12,19 +12,19 @@
 
 import numpy as np
 
-def reshape_for_time_resolution(lstm_inputs, target_outputs, time_res):
+def reshape_for_time_resolution(lstm_inputs, target_outputs, args):
 	# Returns data (inputs) and labels (targets)
 	data = []
 	labels = []
-	num_truncate = lstm_inputs.shape[1]%time_res
+	num_truncate = lstm_inputs.shape[1]%args.time_res
 	end_idx = lstm_inputs.shape[1] - num_truncate
-	data = lstm_inputs[:, :end_idx, :].reshape(-1, end_idx//time_res, 4, order='F')
-	labels = target_outputs[:, :end_idx, :].reshape(-1, end_idx//time_res, 3, order='F')
+	data = lstm_inputs[:, :end_idx, :].reshape(-1, end_idx//args.time_res, args.input_size, order='F')
+	labels = target_outputs[:, :end_idx, :].reshape(-1, end_idx//args.time_res, 3, order='F')
 	return data, labels
 
-def reshape_full_series(lstm_inputs, target_outputs, lstm_outputs, time_res):
-	num_realizations = lstm_inputs.shape[0]//time_res
-	data = lstm_inputs.reshape(num_realizations,-1, 4, order='F')
+def reshape_full_series(lstm_inputs, target_outputs, lstm_outputs, args):
+	num_realizations = lstm_inputs.shape[0]//args.time_res
+	data = lstm_inputs.reshape(num_realizations,-1, args.input_size, order='F')
 	labels = target_outputs.reshape(num_realizations,-1, 3, order='F')
 	outputs = lstm_outputs.reshape(num_realizations, -1, 3, order='F')
 	return data, labels, outputs
