@@ -92,10 +92,10 @@ class DataInfoArgs(object):
 		num_train_realizations = 12 #per dataset
 		num_val_realizations = 4
 		num_test_realizations = 4
-		dataset_idxs = list(range(7))
+		dataset_idxs = [0]
 		num_datasets = len(dataset_idxs)
-		path = "C:/Users/ASUS/Documents/MIT/Thesis/beam_sternquartering_oblique_waves_all/"
-		# path = "C:/Users/danci/Documents/MIT/Thesis/Data_for_MIT/beam_sternquartering_oblique_waves_all/"
+		# path = "C:/Users/ASUS/Documents/MIT/Thesis/beam_sternquartering_oblique_waves_all/"
+		path = "C:/Users/danci/Documents/MIT/Thesis/Data_for_MIT/beam_sternquartering_oblique_waves_all/"
 		simple_prefix_list = ["flh_irreg6b-th-000", "flh_irreg6b-th_115_164-000000", "flh_irreg6b-th_115_14-000000", "flh_irreg6b-th_8_164-000000", "flh_irreg6b-th_8_14-000000", "flh_irreg6b-th_oblique-00000", "flh_irreg6b-th_sternquartering-00000"   ]
 		lamp_prefix_list = ["L2_ONRFL_", "L2_ONRFL_115_164_", "L2_ONRFL_115_14_", "L2_ONRFL_8_164_",  "L2_ONRFL_8_14_", "L2_oblique_", "L2_sternquartering_"]
 		series_numbers_list = [ ["0037", "0306", "0347", "0414", "0500", "0537", "0637", "0767", "0889", "0973", "1081", "1140", "1402", "1417", "1527", "1537", "1666", "1741", "1794", "1879"],
@@ -129,6 +129,17 @@ class DataInfoArgs(object):
 			for j in range(num_train_realizations+num_val_realizations,num_train_realizations+num_val_realizations+num_test_realizations):
 				self.test_sc.append(path+simple_prefix+series_numbers[j])
 				self.test_lamp.append(path+lamp_prefix+series_numbers[j])
+
+class SaveDataArgs(object):
+	def __init__(self):
+		self.save_data_mode = True
+		self.output_path = "C:/Users/danci/Documents/MIT/Thesis" #if the output_path="", then it will save in the currently running directory.
+		# if the output_path is invalid, then it will save the file in the currently running directory.
+		self.prefix = "lstm_output_for_" #prefix for filename
+		#these are the indices of the training, validation, and test sets that you want the LSTM output to be saved to a text file.
+		self.train = [0]
+		self.val   = [0,1]
+		self.test  = [0,1,2]
 		
 class DerivedArgs(object):
 	def __init__(self, usr_args, data_info):

@@ -13,10 +13,11 @@ from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
 #On the line below, specifiy after "from" which file the user inputs are coming from.
-from input_polarset1_wavegrid import UserInputArgs, PlottingArgs, DataInfoArgs, DerivedArgs
+from input_template import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
+from save_lstm_results import save_lstm_results
 
 print("Cuda available:", torch.cuda.is_available())
 if torch.cuda.is_available():
@@ -29,6 +30,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 args = UserInputArgs()
 plot_args = PlottingArgs()
 data_info_args = DataInfoArgs()
+save_data_args = SaveDataArgs()
 derived_args = DerivedArgs(args, data_info_args)
 
 #either load in a saved network or create a new one for training
@@ -129,3 +131,6 @@ print_error_report(train_lstm_output, val_lstm_output, test_lstm_output, train_t
 
 #Plot Results
 plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args)
+
+#Save Results
+save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args)
