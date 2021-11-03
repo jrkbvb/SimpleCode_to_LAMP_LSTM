@@ -97,7 +97,7 @@ if args.training_mode==True:
 	    	torch.save(network.state_dict(), "recently_trained_model.pt")
 	    else:
 	    	best_loss_counter += 1
-	    if best_loss_counter > 50:
+	    if best_loss_counter > 30:
 	    	break
 	    print('Train Epoch: {:02d} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 	print("Training Done\n")
