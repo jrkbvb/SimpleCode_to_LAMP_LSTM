@@ -13,7 +13,7 @@ from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
 #On the line below, specifiy after "from" which file the user inputs are coming from.
-from input_template import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
+from input_test_bimodal import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
@@ -41,16 +41,15 @@ if args.training_mode==False:
 
 # Read in and Standardize the data. Each input & target is formatted:
 # [num_realizations, full series length (17990), num_parameters]
+print("\nLoading Training Data")
 if args.training_mode==False:
-	print("\nLoading Training Data")
-	train_input, train_target	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args, wave_mean, wave_std)
+	train_input, train_target, train_sc	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args, wave_mean, wave_std)
 elif args.training_mode==True:
-	print("\nLoading Training Data")
-	train_input, train_target, wave_mean, wave_std 	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args)
+	train_input, train_target, wave_mean, wave_std, train_sc = load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args)
 print("\nLoading Validation Data")
-val_input,   val_target 						= load_and_standardize(data_info_args.val_sc, data_info_args.val_lamp, args, wave_mean, wave_std)
+val_input,   val_target, val_sc	= load_and_standardize(data_info_args.val_sc, data_info_args.val_lamp, args, wave_mean, wave_std)
 print("\nLoading Testing Data")
-test_input,  test_target 						= load_and_standardize(data_info_args.test_sc, data_info_args.test_lamp, args, wave_mean, wave_std)
+test_input,  test_target, test_sc = load_and_standardize(data_info_args.test_sc, data_info_args.test_lamp, args, wave_mean, wave_std)
 
 #START TIME_RES LOOP, HIDDEN_SIZE, AND NUM_LAYERS HERE
 
@@ -81,6 +80,7 @@ print(f"val_input has shape 	{val_input.shape}")
 print(f"val_target has shape 	{val_target.shape}")
 print(f"test_input has shape 	{test_input.shape}")
 print(f"test_target has shape 	{test_target.shape}")
+realization_length = train_input.shape[1]*args.time_res
 
 # initialize our optimizer. We'll use Adam
 optimizer = torch.optim.Adam(network.parameters(), lr=args.lr)
@@ -125,7 +125,7 @@ test_input,  test_target, test_lstm_output 	= reshape_full_series(test_input,  t
 
 #Print Final Errors
 print("\nSimpleCode Error Results:")
-print_error_report(train_input[:,:,:3], val_input[:,:,:3], test_input[:,:,:3], train_target, val_target, test_target, args)
+print_error_report(train_sc[:,:realization_length,:], val_sc[:,:realization_length,:], test_sc[:,:realization_length,:], train_target, val_target, test_target, args)
 print("\nLSTM Error Results:")
 print_error_report(train_lstm_output, val_lstm_output, test_lstm_output, train_target, val_target, test_target, args)
 
