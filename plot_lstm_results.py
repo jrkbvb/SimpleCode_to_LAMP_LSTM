@@ -1,36 +1,36 @@
 import matplotlib.pyplot as plt
 from peak_errors_scatter_plot import peak_errors_scatter_plot
 import numpy as np
-def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args):
+def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors):
 	if plot_args.plotting_mode==False:
 		return
 
 	for i in plot_args.prediction_ID_list_train:
-		prediction_plot(train_target[i], train_lstm_output[i], plot_args, data_info_args.train_sc[i])
+		prediction_plot(train_target[i], train_lstm_output[i], plot_args, data_info_args.train_sc[i], std_factors)
 
 	for i in plot_args.prediction_ID_list_val:
-		prediction_plot(val_target[i], val_lstm_output[i], plot_args, data_info_args.val_sc[i])
+		prediction_plot(val_target[i], val_lstm_output[i], plot_args, data_info_args.val_sc[i], std_factors)
 
 	for i in plot_args.prediction_ID_list_test:
-		prediction_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i])
+		prediction_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i], std_factors)
 
 	for i in plot_args.error_ID_list_train:
-		error_plot(train_target[i], train_lstm_output[i], plot_args, data_info_args.train_sc[i])
+		error_plot(train_target[i], train_lstm_output[i], plot_args, data_info_args.train_sc[i], std_factors)
 
 	for i in plot_args.error_ID_list_val:
-		error_plot(val_target[i], val_lstm_output[i], plot_args, data_info_args.val_sc[i])
+		error_plot(val_target[i], val_lstm_output[i], plot_args, data_info_args.val_sc[i], std_factors)
 
 	for i in plot_args.error_ID_list_test:
-		error_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i])
+		error_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i], std_factors)
 
-	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args)
+	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors)
 	plt.draw()
 
 
-def prediction_plot(target, lstm_output, plot_args, sc_filepath):
+def prediction_plot(target, lstm_output, plot_args, sc_filepath, std_factors):
 	#un-standardize the data
 	print("Plotting the parameters prediction plots for ", sc_filepath)
-	simple_data, lamp_data, lstm_data = un_standardize(target, lstm_output, sc_filepath)
+	simple_data, lamp_data, lstm_data = un_standardize(target, lstm_output, sc_filepath, std_factors)
 	time_vector = [i/10 for i in range(lstm_data.shape[0])]
 
 	fig1, axs1 = plt.subplots(3,1)
@@ -65,10 +65,10 @@ def prediction_plot(target, lstm_output, plot_args, sc_filepath):
 	# axs1[2].set_ylim([-5, 5])
 
 
-def error_plot(target, lstm_output, plot_args, sc_filepath):
+def error_plot(target, lstm_output, plot_args, sc_filepath, std_factors):
 	#un-standardize the data
 	print("Plotting the error plots for ", sc_filepath)
-	simple_data, lamp_data, lstm_data = un_standardize(target, lstm_output, sc_filepath)
+	simple_data, lamp_data, lstm_data = un_standardize(target, lstm_output, sc_filepath, std_factors)
 	time_vector = [i/10 for i in range(lstm_data.shape[0])]
 
 	fig2, axs2 = plt.subplots(3,2)
@@ -147,7 +147,7 @@ def error_plot(target, lstm_output, plot_args, sc_filepath):
 	axs2[2, 1].set_ylim([-(np.max(np.absolute(simple_error[pitch_peak_idx,2]))+0.2), np.max(np.absolute(simple_error[pitch_peak_idx,2]))+0.2])
 
 
-def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args):
+def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors):
 	#un-standardize the data
 	
 	num_realizations = len(plot_args.maxima_ID_list_train) + len(plot_args.maxima_ID_list_val) + len(plot_args.maxima_ID_list_test)
@@ -160,19 +160,19 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	j = 0
 	for i in plot_args.maxima_ID_list_train:
 		sc_filepath = data_info_args.train_sc[i]
-		simple_data[j], lamp_data[j], lstm_data[j] = un_standardize(train_target[i], train_lstm_output[i], sc_filepath)
+		simple_data[j], lamp_data[j], lstm_data[j] = un_standardize(train_target[i], train_lstm_output[i], sc_filepath, std_factors)
 		j+=1
 	j1 = j
 
 	for i in plot_args.maxima_ID_list_val:
 		sc_filepath = data_info_args.val_sc[i]
-		simple_data[j], lamp_data[j], lstm_data[j] = un_standardize(val_target[i], val_lstm_output[i], sc_filepath)
+		simple_data[j], lamp_data[j], lstm_data[j] = un_standardize(val_target[i], val_lstm_output[i], sc_filepath, std_factors)
 		j+=1
 	j2 = j
 
 	for i in plot_args.maxima_ID_list_test:
 		sc_filepath = data_info_args.test_sc[i]
-		simple_data[j], lamp_data[j], lstm_data[j] = un_standardize(test_target[i], test_lstm_output[i], sc_filepath)
+		simple_data[j], lamp_data[j], lstm_data[j] = un_standardize(test_target[i], test_lstm_output[i], sc_filepath, std_factors)
 		j+=1
 	j3 = j
 
@@ -235,11 +235,10 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	axs3[2].axes.set_aspect('equal')
 
 
-def un_standardize(target, lstm_output, sc_filepath):
+def un_standardize(target, lstm_output, sc_filepath, std_factors):
 	realization_length = lstm_output.shape[0]
 	simple_data = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
-	zcg_mean = np.mean(simple_data[:,0])
-	zcg_std = np.std(simple_data[:,0])
+
 	roll_mean = np.mean(simple_data[:,1])
 	roll_std = np.std(simple_data[:,1])
 	pitch_mean = np.mean(simple_data[:,2])
@@ -247,10 +246,10 @@ def un_standardize(target, lstm_output, sc_filepath):
 
 	lamp_data = np.copy(target)
 	lstm_data = np.copy(lstm_output)
-	lamp_data[:,0] = target[:,0]*zcg_std + zcg_mean
+	lamp_data[:,0] = target[:,0]*std_factors[3] + std_factors[2] #zcg
 	lamp_data[:,1] = target[:,1]*roll_std + roll_mean
 	lamp_data[:,2] = target[:,2]*pitch_std + pitch_mean
-	lstm_data[:,0] = lstm_output[:,0]*zcg_std + zcg_mean
+	lstm_data[:,0] = lstm_output[:,0]*std_factors[3] + std_factors[2] #zcg
 	lstm_data[:,1] = lstm_output[:,1]*roll_std + roll_mean
 	lstm_data[:,2] = lstm_output[:,2]*pitch_std + pitch_mean
 

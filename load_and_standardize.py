@@ -27,11 +27,11 @@ def load_fullseries(num_inputs, args, simple_filenames, lamp_filenames):
 	target_outputs = np.asarray(target_outputs)	
 	return lstm_inputs, target_outputs
 
-def load_and_standardize(simple_filenames, lamp_filenames, args, wave_mean=None, wave_std=None):
+def load_and_standardize(simple_filenames, lamp_filenames, args, std_factors=None):
 	lstm_inputs, target_outputs = load_fullseries(args.input_size, args, simple_filenames, lamp_filenames)
 	num_datasets = lstm_inputs.shape[0]
 	flag=False
-	if wave_mean==None and wave_std==None:
+	if std_factors==None:
 		flag = True
 		if args.input_option==1:
 			wave_mean = 0
@@ -39,9 +39,10 @@ def load_and_standardize(simple_filenames, lamp_filenames, args, wave_mean=None,
 		else:
 			wave_mean = np.mean(lstm_inputs[:, :, 3:])
 			wave_std  = np.std(lstm_inputs[:, :, 3:])
+		zcg_mean = np.mean(lstm_inputs[:, :, 0])
+		zcg_std = np.std(lstm_inputs[:, :, 0])
+		std_factors = [wave_mean, wave_std, zcg_mean, zcg_std]
 	for i in range(num_datasets):
-		zcg_mean = np.mean(lstm_inputs[i:(i+1), :, 0])
-		zcg_std  = np.std(lstm_inputs[i:(i+1), :, 0])
 		roll_mean = np.mean(lstm_inputs[i:(i+1), :, 1])
 		roll_std  = np.std(lstm_inputs[i:(i+1), :, 1])
 		if roll_std<=.00001:
@@ -49,12 +50,12 @@ def load_and_standardize(simple_filenames, lamp_filenames, args, wave_mean=None,
 		pitch_mean = np.mean(lstm_inputs[i:(i+1), :, 2])
 		pitch_std  = np.std(lstm_inputs[i:(i+1), :, 2])
 		
-		lstm_inputs[i:i+1,:,0] = (lstm_inputs[i:i+1,:,0]-zcg_mean)/zcg_std
+		lstm_inputs[i:i+1,:,0] = (lstm_inputs[i:i+1,:,0]-std_factors[2])/std_factors[3]
 		lstm_inputs[i:i+1,:,1] = (lstm_inputs[i:i+1,:,1]-roll_mean)/roll_std
 		lstm_inputs[i:i+1,:,2] = (lstm_inputs[i:i+1,:,2]-pitch_mean)/pitch_std
 		if not args.input_option==1:
-			lstm_inputs[i:i+1,:,3:] = (lstm_inputs[i:i+1,:,3:]-wave_mean)/wave_std
-		target_outputs[i:i+1,:,0]   = (target_outputs[i:i+1,:,0]-zcg_mean)/zcg_std
+			lstm_inputs[i:i+1,:,3:] = (lstm_inputs[i:i+1,:,3:]-std_factors[0])/std_factors[1]
+		target_outputs[i:i+1,:,0]   = (target_outputs[i:i+1,:,0]-std_factors[2])/std_factors[3]
 		target_outputs[i:i+1,:,1]   = (target_outputs[i:i+1,:,1]-roll_mean)/roll_std
 		target_outputs[i:i+1,:,2]   = (target_outputs[i:i+1,:,2]-pitch_mean)/pitch_std
 
@@ -66,7 +67,7 @@ def load_and_standardize(simple_filenames, lamp_filenames, args, wave_mean=None,
 	print("full series simple (input) shape ", lstm_inputs.shape)
 	print("full series lamp (target) shape ", target_outputs.shape)
 	if flag:
-		return lstm_inputs, target_outputs, wave_mean, wave_std, sc_inputs
+		return lstm_inputs, target_outputs, std_factors, sc_inputs
 	else:
 		return lstm_inputs, target_outputs, sc_inputs
 

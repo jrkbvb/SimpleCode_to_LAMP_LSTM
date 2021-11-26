@@ -36,22 +36,22 @@ derived_args = DerivedArgs(args, data_info_args)
 #either load in a saved network or create a new one for training
 #creating a new one for training_mode==True can be done later, and is more convenient for optimizing hyper-parameters
 if args.training_mode==False:
-	network, wave_mean, wave_std = load_lstm_info(args)
+	network, std_factors = load_lstm_info(args)
 	network.to(device)
 
 # Read in and Standardize the data. Each input & target is formatted:
 # [num_realizations, full series length (17990), num_parameters]
 print("\nLoading Training Data")
 if args.training_mode==False:
-	train_input, train_target, train_sc	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args, wave_mean, wave_std)
+	train_input, train_target, train_sc	= load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args, std_factors)
 elif args.training_mode==True:
-	train_input, train_target, wave_mean, wave_std, train_sc = load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args)
+	train_input, train_target, std_factors, train_sc = load_and_standardize(data_info_args.train_sc, data_info_args.train_lamp, args)
 print("\nLoading Validation Data")
-val_input,   val_target, val_sc	= load_and_standardize(data_info_args.val_sc, data_info_args.val_lamp, args, wave_mean, wave_std)
+val_input,   val_target, val_sc	= load_and_standardize(data_info_args.val_sc, data_info_args.val_lamp, args, std_factors)
 print("\nLoading Testing Data")
-test_input,  test_target, test_sc = load_and_standardize(data_info_args.test_sc, data_info_args.test_lamp, args, wave_mean, wave_std)
+test_input,  test_target, test_sc = load_and_standardize(data_info_args.test_sc, data_info_args.test_lamp, args, std_factors)
 
-#START TIME_RES LOOP, HIDDEN_SIZE, AND NUM_LAYERS HERE
+print("standardization factors are", std_factors)
 
 if args.training_mode==True:
 	# create an instance of our LSTM network
@@ -93,7 +93,7 @@ if args.training_mode==True:
 	for epoch in range(1, args.epochs+1):
 	    train_loss = train(network, device, train_loader, optimizer, args.train_fun_hyp)
 	    val_loss   = test(network, device, val_loader, args.val_fun_hyp)
-	    if val_loss < 0.99*best_val_loss:
+	    if val_loss < 0.95*best_val_loss:
 	    	best_val_loss = val_loss
 	    	best_loss_counter = 0
 	    	torch.save(network.state_dict(), "recently_trained_model.pt")
@@ -104,7 +104,7 @@ if args.training_mode==True:
 	    print('Train Epoch: {:02d} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}'.format(epoch, train_loss, val_loss))
 	print("Training Done\n")
 	network.load_state_dict(torch.load("recently_trained_model.pt")) # restoring the best found network based on validation data
-	save_lstm_info(network.state_dict(), args, data_info_args, wave_mean, wave_std)	
+	save_lstm_info(network.state_dict(), args, data_info_args, std_factors)	
 
 #Produce final LSTM output
 train_loader = DataLoader(train_dataset, batch_size=derived_args.train_batch_size) #now with shuffle off so everything is ordered correctly
@@ -130,7 +130,7 @@ print("\nLSTM Error Results:")
 print_error_report(train_lstm_output, val_lstm_output, test_lstm_output, train_target, val_target, test_target, args)
 
 #Plot Results
-plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args)
+plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors)
 
 #Save Results
 save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args)
