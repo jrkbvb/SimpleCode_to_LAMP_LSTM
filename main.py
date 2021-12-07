@@ -13,7 +13,7 @@ from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
 #On the line below, specifiy after "from" which file the user inputs are coming from.
-from input_test_bimodal import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
+from input_test_bimodal2 import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
@@ -133,6 +133,6 @@ print_error_report(train_lstm_output, val_lstm_output, test_lstm_output, train_t
 plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors)
 
 #Save Results
-save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args)
+save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args, std_factors)
 
 plt.show()
