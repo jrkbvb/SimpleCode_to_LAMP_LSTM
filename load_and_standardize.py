@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 def load_fullseries(num_inputs, args, simple_filenames, lamp_filenames):
 	lstm_inputs = []
 	target_outputs = []
@@ -7,21 +8,16 @@ def load_fullseries(num_inputs, args, simple_filenames, lamp_filenames):
 	for k in range(num_files):
 		simple_filename = simple_filenames[k]
 		lamp_filename   = lamp_filenames[k]
-		if args.input_option==2 or args.input_option==3:
-			if args.wave_grid_x_size==1 and args.wave_grid_y_size==1:
-				wave_content = np.loadtxt(lamp_filename + ".wav", skiprows=3)
-				wave_data = wave_content[:-num_truncate, 1:2]
-			else:
-				wave_data = np.loadtxt(lamp_filename + ".wave_grid")[:-num_truncate, :]
+		if args.wave_grid_x_size==1 and args.wave_grid_y_size==1:
+			wave_content = np.loadtxt(lamp_filename + ".wav", skiprows=3)
+			wave_data = wave_content[:-num_truncate, 1:2]
+		else:
+			wave_data = np.loadtxt(lamp_filename + ".wave_grid")[:-num_truncate, :]
 		simple_content = np.loadtxt(simple_filename + ".mot",skiprows=2)
 		lamp_content = np.loadtxt(lamp_filename + ".mot", skiprows=3)
 		simple_data = simple_content[:-num_truncate, [3,4,5]] # the 3,4,and 5 columns (4th, 5th, and 6th) are Zcg, roll, and Pitch										
 		lamp_data = lamp_content[:-num_truncate, [3,4,5]]
-		if args.input_option == 1:
-			lstm_inputs.append(simple_data)
-		else:
-			#We have to keep the simple_data in for the moment for standardization purposes
-			lstm_inputs.append(np.concatenate((simple_data, wave_data), axis=1))
+		lstm_inputs.append(np.concatenate((simple_data, wave_data), axis=1))
 		target_outputs.append(lamp_data)
 	lstm_inputs = np.asarray(lstm_inputs)
 	target_outputs = np.asarray(target_outputs)	
@@ -33,33 +29,28 @@ def load_and_standardize(simple_filenames, lamp_filenames, args, std_factors=Non
 	flag=False
 	if std_factors==None:
 		flag = True
-		if args.input_option==1:
-			wave_mean = 0
-			wave_std  = 1
-		else:
-			wave_mean = np.mean(lstm_inputs[:, :, 3:])
-			wave_std  = np.std(lstm_inputs[:, :, 3:])
-		zcg_mean = np.mean(lstm_inputs[:, :, 0])
-		zcg_std = np.std(lstm_inputs[:, :, 0])
-		std_factors = [wave_mean, wave_std, zcg_mean, zcg_std]
-	for i in range(num_datasets):
-		roll_mean = np.mean(lstm_inputs[i:(i+1), :, 1])
-		roll_std  = np.std(lstm_inputs[i:(i+1), :, 1])
-		if roll_std<=.00001:
-			roll_std=1 #for head on waves, all roll is zero, no need to standardize
-		pitch_mean = np.mean(lstm_inputs[i:(i+1), :, 2])
-		pitch_std  = np.std(lstm_inputs[i:(i+1), :, 2])
-		
-		lstm_inputs[i:i+1,:,0] = (lstm_inputs[i:i+1,:,0]-std_factors[2])/std_factors[3]
-		lstm_inputs[i:i+1,:,1] = (lstm_inputs[i:i+1,:,1]-roll_mean)/roll_std
-		lstm_inputs[i:i+1,:,2] = (lstm_inputs[i:i+1,:,2]-pitch_mean)/pitch_std
-		if not args.input_option==1:
-			lstm_inputs[i:i+1,:,3:] = (lstm_inputs[i:i+1,:,3:]-std_factors[0])/std_factors[1]
-		target_outputs[i:i+1,:,0]   = (target_outputs[i:i+1,:,0]-std_factors[2])/std_factors[3]
-		target_outputs[i:i+1,:,1]   = (target_outputs[i:i+1,:,1]-roll_mean)/roll_std
-		target_outputs[i:i+1,:,2]   = (target_outputs[i:i+1,:,2]-pitch_mean)/pitch_std
+		zcg_glob_mean = np.mean(lstm_inputs[:, :, 0])
+		zcg_glob_std = np.std(lstm_inputs[:, :, 0])
+		roll_glob_mean = np.mean(lstm_inputs[:, :, 1])
+		roll_glob_std = np.std(lstm_inputs[:, :, 1])
+		if roll_glob_std<=.00001:
+			roll_glob_std = 1
+		pitch_glob_mean = np.mean(lstm_inputs[:, :, 2])
+		pitch_glob_std = np.std(lstm_inputs[:, :, 2])
+		wave_glob_mean = np.mean(lstm_inputs[:, :, 3:])
+		wave_glob_std  = np.std(lstm_inputs[:, :, 3:])
+		std_factors = [zcg_glob_mean, zcg_glob_std, roll_glob_mean, roll_glob_std, pitch_glob_mean, pitch_glob_std, wave_glob_mean, wave_glob_std]
+	for i in range(num_datasets):		
+		lstm_inputs[i:i+1,:,0] = (lstm_inputs[i:i+1,:,0]-std_factors[0])/std_factors[1]
+		target_outputs[i:i+1,:,0]   = (target_outputs[i:i+1,:,0]-std_factors[0])/std_factors[1]
+		lstm_inputs[i:i+1,:,1] = (lstm_inputs[i:i+1,:,1]-std_factors[2])/std_factors[3]
+		target_outputs[i:i+1,:,1]   = (target_outputs[i:i+1,:,1]-std_factors[2])/std_factors[3]
+		lstm_inputs[i:i+1,:,2] = (lstm_inputs[i:i+1,:,2]-std_factors[4])/std_factors[5]
+		target_outputs[i:i+1,:,2]   = (target_outputs[i:i+1,:,2]-std_factors[4])/std_factors[5]
+		lstm_inputs[i:i+1,:,3:] = (lstm_inputs[i:i+1,:,3:]-std_factors[6])/std_factors[7]
 
-		sc_inputs = lstm_inputs[:,:,:3]
+	sc_inputs = lstm_inputs[:,:,:3]
+
 	if args.input_option==1:
 		lstm_inputs = lstm_inputs[:,:,:3]
 	elif args.input_option==2:

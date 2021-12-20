@@ -18,6 +18,7 @@ from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
 from save_lstm_results import save_lstm_results
+from unstandardize_all_data import unstandardize_all_data
 
 print("Cuda available:", torch.cuda.is_available())
 if torch.cuda.is_available():
@@ -122,6 +123,11 @@ print("Time to produce output for ", derived_args.num_realizations," realization
 train_input, train_target, train_lstm_output 	= reshape_full_series(train_input, train_target, train_lstm_output, args)
 val_input,   val_target, val_lstm_output 	= reshape_full_series(val_input,   val_target,   val_lstm_output, args)
 test_input,  test_target, test_lstm_output 	= reshape_full_series(test_input,  test_target,  test_lstm_output, args)
+
+#Unstandardize
+train_sc, train_target, train_lstm_output = unstandardize_all_data(train_sc, train_target, train_lstm_output, std_factors, data_info_args.train_sc, data_info_args.train_lamp)
+val_sc, val_target, val_lstm_output = unstandardize_all_data(val_sc, val_target, val_lstm_output, std_factors, data_info_args.val_sc, data_info_args.val_lamp)
+test_sc, test_target, test_lstm_output = unstandardize_all_data(test_sc, test_target, test_lstm_output, std_factors, data_info_args.test_sc, data_info_args.test_lamp)
 
 #Print Final Errors
 print("\nSimpleCode Error Results:")
