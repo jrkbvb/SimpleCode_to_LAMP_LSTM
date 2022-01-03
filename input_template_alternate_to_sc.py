@@ -11,7 +11,7 @@ class UserInputArgs(object):
 		self.seq_length = 17990//self.time_res
 		self.hidden_size = 30
 		self.num_layers = 2
-		self.num_batches = 6 #number of batches in each training epoch
+		self.num_batches = 9 #number of batches in each training epoch
 		self.bi_directional = False
 		self.dropout = 0
 		self.lr = 0.005
@@ -45,7 +45,7 @@ class UserInputArgs(object):
 
 class PlottingArgs(object):
 	def __init__(self):
-		self.plotting_mode = False #set to false to not plot anything
+		self.plotting_mode = True #set to false to not plot anything
 		'''
 		Each item in the lists below should be an integer that correlates to the index of the realization
 		that you want plotted from the DataInfo Class (see down below). For example: putting a 0 in 
@@ -53,15 +53,15 @@ class PlottingArgs(object):
 		'''
 		self.prediction_ID_list_train = [] #for plotting the LSTM heave, roll, pitch and compare to SC & LAMP
 		self.prediction_ID_list_val   = []
-		self.prediction_ID_list_test  = []
+		self.prediction_ID_list_test  = [0]
 
 		self.error_ID_list_train      = [] #for the error plots
 		self.error_ID_list_val        = []
-		self.error_ID_list_test       = []
+		self.error_ID_list_test       = [0]
 
-		self.maxima_ID_list_train     = [] #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
-		self.maxima_ID_list_val       = [] 
-		self.maxima_ID_list_test      = [] 
+		self.maxima_ID_list_train     = [0,1,2,3,4] #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
+		self.maxima_ID_list_val       = [0,1,2,3,4] 
+		self.maxima_ID_list_test      = [0] 
 
 		self.simple_color = "red"
 		self.lamp_color = "black"
@@ -91,8 +91,13 @@ class DataInfoArgs(object):
 		### modify this next part as necessary to fill in the lists above ###
 		train_records = ["5", "6", "7", "8", "9"]
 		val_records = ["10", "11", "12", "13", "14"]
-		test_records = ["15", "16", "17", "18", "19"]
+		test_records = ["15", "16", "17", "18"]
 		path = "C:/Users/danci/Documents/MIT/Thesis/Data_for_MIT/alternate_to_sc/"
+
+		# train_records = ["01", "02", "03", "04", "05"]
+		# val_records = ["06", "07", "08", "09"]
+		# test_records = ["10"]
+		# path = "C:/Users/danci/Documents/MIT/Thesis/Data_for_MIT/Set_1_forwardmoving_headon_waves/"
 
 		simple_prefix = "data_adhoc_"
 		lamp_prefix = "L1_ONRFL_IR"
@@ -111,14 +116,14 @@ class DataInfoArgs(object):
 
 class SaveDataArgs(object):
 	def __init__(self):
-		self.save_data_mode = False
-		self.output_path = "C:/Users/danci/Documents/MIT/Thesis" #if the output_path="", then it will save in the currently running directory.
+		self.save_data_mode = True
+		self.output_path = "C:/Users/danci/Documents/MIT/Thesis/Data_for_MIT/alternate_to_sc/" #if the output_path="", then it will save in the currently running directory.
 		# if the output_path is invalid, then it will save the file in the currently running directory.
 		self.prefix = "lstm_output_for_" #prefix for filename
 		#these are the indices of the training, validation, and test sets that you want the LSTM output to be saved to a text file.
-		self.train = [0]
-		self.val   = [0,1]
-		self.test  = [0,1,2]
+		self.train = []
+		self.val   = []
+		self.test  = [0]
 		
 class DerivedArgs(object):
 	def __init__(self, usr_args, data_info):

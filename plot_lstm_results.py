@@ -1,37 +1,37 @@
 import matplotlib.pyplot as plt
 from peak_errors_scatter_plot import peak_errors_scatter_plot
 import numpy as np
-def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors):
+def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args, std_factors):
 	if plot_args.plotting_mode==False:
 		return
 
 	for i in plot_args.prediction_ID_list_train:
-		prediction_plot(train_target[i], train_lstm_output[i], plot_args, data_info_args.train_sc[i], std_factors)
+		prediction_plot(train_target[i], train_lstm_output[i], train_sc[i], plot_args, data_info_args.train_sc[i], std_factors)
 
 	for i in plot_args.prediction_ID_list_val:
-		prediction_plot(val_target[i], val_lstm_output[i], plot_args, data_info_args.val_sc[i], std_factors)
+		prediction_plot(val_target[i], val_lstm_output[i], val_sc[i], plot_args, data_info_args.val_sc[i], std_factors)
 
 	for i in plot_args.prediction_ID_list_test:
-		prediction_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i], std_factors)
+		prediction_plot(test_target[i], test_lstm_output[i], test_sc[i], plot_args, data_info_args.test_sc[i], std_factors)
 
 	for i in plot_args.error_ID_list_train:
-		error_plot(train_target[i], train_lstm_output[i], plot_args, data_info_args.train_sc[i], std_factors)
+		error_plot(train_target[i], train_lstm_output[i], train_sc[i], plot_args, data_info_args.train_sc[i], std_factors)
 
 	for i in plot_args.error_ID_list_val:
-		error_plot(val_target[i], val_lstm_output[i], plot_args, data_info_args.val_sc[i], std_factors)
+		error_plot(val_target[i], val_lstm_output[i], val_sc[i], plot_args, data_info_args.val_sc[i], std_factors)
 
 	for i in plot_args.error_ID_list_test:
-		error_plot(test_target[i], test_lstm_output[i], plot_args, data_info_args.test_sc[i], std_factors)
+		error_plot(test_target[i], test_lstm_output[i], test_sc[i], plot_args, data_info_args.test_sc[i], std_factors)
 
-	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors)
+	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args, std_factors)
 	plt.draw()
 
 
-def prediction_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
+def prediction_plot(lamp_data, lstm_data, simple_data, plot_args, sc_filepath, std_factors):
 	#un-standardize the data
 	print("Plotting the parameters prediction plots for ", sc_filepath)
 	realization_length = lstm_data.shape[0]
-	simple_data = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+	# simple_data = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
 	time_vector = [i/10 for i in range(lstm_data.shape[0])]
 
 	fig1, axs1 = plt.subplots(3,1)
@@ -44,7 +44,7 @@ def prediction_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 	axs1[0].legend(["LAMP","SIMPLE","SIMPLE + LSTM correction"])
 	axs1[0].title.set_text("Zcg")
 	axs1[0].set(xlabel="Time (seconds)", ylabel="Zcg (meters)")
-	axs1[0].set_xlim([1600, 1700])
+	# axs1[0].set_xlim([1600, 1700])
 	# axs1[0].set_ylim([-5, 5])
 	
 	axs1[1].plot(time_vector, lamp_data[:,1], color=plot_args.lamp_color, linewidth=0.75)
@@ -53,7 +53,7 @@ def prediction_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 	axs1[1].legend(["LAMP","SIMPLE","SIMPLE + LSTM correction"])
 	axs1[1].title.set_text("Roll")
 	axs1[1].set(xlabel="Time (seconds)", ylabel="Roll (degrees)")
-	axs1[1].set_xlim([1600, 1700])
+	# axs1[1].set_xlim([1600, 1700])
 	# axs1[1].set_ylim([-5, 5])
 
 	axs1[2].plot(time_vector, lamp_data[:,2], color=plot_args.lamp_color, linewidth=0.75)
@@ -62,15 +62,15 @@ def prediction_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 	axs1[2].legend(["LAMP","SIMPLE","SIMPLE + LSTM correction"])
 	axs1[2].title.set_text("Pitch")
 	axs1[2].set(xlabel="Time (seconds)", ylabel="Pitch (degrees)")
-	axs1[2].set_xlim([1600, 1700])
+	# axs1[2].set_xlim([1600, 1700])
 	# axs1[2].set_ylim([-5, 5])
 
 
-def error_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
+def error_plot(lamp_data, lstm_data, simple_data, plot_args, sc_filepath, std_factors):
 	#un-standardize the data
 	print("Plotting the error plots for ", sc_filepath)
 	realization_length = lstm_data.shape[0]
-	simple_data = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+	# simple_data = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
 	time_vector = [i/10 for i in range(lstm_data.shape[0])]
 
 	fig2, axs2 = plt.subplots(3,2)
@@ -94,7 +94,7 @@ def error_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 		np.max(np.absolute(simple_error[:,0])), np.mean(np.absolute(simple_error[:,0])), np.std(np.absolute(simple_error[:,0])),
 		np.max(np.absolute(lstm_error[:,0])), np.mean(np.absolute(lstm_error[:,0])), np.std(np.absolute(lstm_error[:,0]))))
 	axs2[0, 0].set(xlabel="Time (seconds)", ylabel="Model-LAMP (meters)")
-	axs2[0, 0].set_xlim([0, 1800])
+	# axs2[0, 0].set_xlim([0, 1800])
 	# axs2[0, 0].set_ylim([-0.1, 2])
 
 	axs2[1, 0].plot(time_vector, running_avg_simple_error[:,1], color=plot_args.simple_color)
@@ -104,7 +104,7 @@ def error_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 		np.max(np.absolute(simple_error[:,1])), np.mean(np.absolute(simple_error[:,1])), np.std(np.absolute(simple_error[:,1])),
 		np.max(np.absolute(lstm_error[:,1])), np.mean(np.absolute(lstm_error[:,1])), np.std(np.absolute(lstm_error[:,1]))))
 	axs2[1, 0].set(xlabel="Time (seconds)", ylabel="Model-LAMP (degrees)")
-	axs2[1, 0].set_xlim([0, 1800])
+	# axs2[1, 0].set_xlim([0, 1800])
 	# axs2[1, 0].set_ylim([-0.1, 2])
 
 	axs2[2, 0].plot(time_vector, running_avg_simple_error[:,2], color=plot_args.simple_color)
@@ -114,7 +114,7 @@ def error_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 		np.max(np.absolute(simple_error[:,2])), np.mean(np.absolute(simple_error[:,2])), np.std(np.absolute(simple_error[:,2])),
 		np.max(np.absolute(lstm_error[:,2])), np.mean(np.absolute(lstm_error[:,2])), np.std(np.absolute(lstm_error[:,2]))))
 	axs2[2, 0].set(xlabel="Time (seconds)", ylabel="Model-LAMP (degrees)")
-	axs2[2, 0].set_xlim([0, 1800])
+	# axs2[2, 0].set_xlim([0, 1800])
 
 	# Generates scatter plot:
 	# X-axis is LAMP peak values; Y-axis is correlating LSTM
@@ -149,7 +149,7 @@ def error_plot(lamp_data, lstm_data, plot_args, sc_filepath, std_factors):
 	axs2[2, 1].set_ylim([-(np.max(np.absolute(simple_error[pitch_peak_idx,2]))+0.2), np.max(np.absolute(simple_error[pitch_peak_idx,2]))+0.2])
 
 
-def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors):
+def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_simple_data, val_simple_data, test_simple_data, plot_args, data_info_args, std_factors):
 	#un-standardize the data
 	
 	num_realizations = len(plot_args.maxima_ID_list_train) + len(plot_args.maxima_ID_list_val) + len(plot_args.maxima_ID_list_test)
@@ -163,7 +163,8 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	for i in plot_args.maxima_ID_list_train:
 		sc_filepath = data_info_args.train_sc[i]
 		realization_length = lstm_data.shape[0]
-		simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+		# simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+		simple_data[j] = np.copy(train_simple_data[i])
 		lamp_data[j] = np.copy(train_target[i])
 		lstm_data[j] = np.copy(train_lstm_output[i])
 		j+=1
@@ -172,7 +173,8 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	for i in plot_args.maxima_ID_list_val:
 		sc_filepath = data_info_args.val_sc[i]
 		realization_length = lstm_data.shape[0]
-		simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+		# simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+		simple_data[j] = np.copy(train_simple_data[i])
 		lamp_data[j] = np.copy(val_target[i])
 		lstm_data[j] = np.copy(val_lstm_output[i])
 		j+=1
@@ -181,7 +183,8 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	for i in plot_args.maxima_ID_list_test:
 		sc_filepath = data_info_args.test_sc[i]
 		realization_length = lstm_data.shape[0]
-		simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+		# simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
+		simple_data[j] = np.copy(train_simple_data[i])
 		lamp_data[j] = np.copy(test_target[i])
 		lstm_data[j] = np.copy(test_lstm_output[i])
 		j+=1

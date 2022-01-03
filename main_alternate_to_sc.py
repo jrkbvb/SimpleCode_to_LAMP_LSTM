@@ -7,7 +7,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-from plot_lstm_results_no_titles import plot_lstm_results
+from plot_lstm_results import plot_lstm_results
 from network_models import LSTM
 from train_test import train, test
 from S2LDataset import S2LDataset
@@ -137,7 +137,7 @@ print("\nLSTM Error Results:")
 print_error_report(train_lstm_output, val_lstm_output, test_lstm_output, train_target, val_target, test_target, args)
 
 #Plot Results
-plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, plot_args, data_info_args, std_factors)
+plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc[:,:realization_length,:], val_sc[:,:realization_length,:], test_sc[:,:realization_length,:], plot_args, data_info_args, std_factors)
 
 #Save Results
 save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args, std_factors)

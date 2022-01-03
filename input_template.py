@@ -1,7 +1,7 @@
 import numpy as np
 class UserInputArgs(object):
 	def __init__(self):
-		self.training_mode = False #set to True to train. Otherwise skip training and just loads a previous one
+		self.training_mode = True #set to True to train. Otherwise skip training and just loads a previous one
 		self.model_load_filename = "recently_trained_model" # "recently_trained_model" is default and
 		#always used if training_mode=True. Specify something else if you want and training_mode=False.
 		self.model_save_filename = "recently_trained_model" #the name of the file that will be saved as class SavedLSTM.
@@ -52,16 +52,16 @@ class PlottingArgs(object):
 		self.prediction_ID_list_test will plot the first realization in the test set.
 		'''
 		self.prediction_ID_list_train = [0] #for plotting the LSTM heave, roll, pitch and compare to SC & LAMP
-		self.prediction_ID_list_val   = [1,2]
-		self.prediction_ID_list_test  = []
+		self.prediction_ID_list_val   = [0]
+		self.prediction_ID_list_test  = [0]
 
-		self.error_ID_list_train      = [] #for the error plots
-		self.error_ID_list_val        = []
-		self.error_ID_list_test       = [0,1,2]
+		self.error_ID_list_train      = [0] #for the error plots
+		self.error_ID_list_val        = [0]
+		self.error_ID_list_test       = [0]
 
-		self.maxima_ID_list_train     = [0,1,2,3,4,5] #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
-		self.maxima_ID_list_val       = [0,1,2,3] 
-		self.maxima_ID_list_test      = [0,1,2,3] 
+		self.maxima_ID_list_train     = [0,1,2] #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
+		self.maxima_ID_list_val       = [0,1,2] 
+		self.maxima_ID_list_test      = [0,1,2] 
 
 		self.simple_color = "red"
 		self.lamp_color = "black"
@@ -132,7 +132,7 @@ class DataInfoArgs(object):
 
 class SaveDataArgs(object):
 	def __init__(self):
-		self.save_data_mode = True
+		self.save_data_mode = False
 		self.output_path = "C:/Users/danci/Documents/MIT/Thesis" #if the output_path="", then it will save in the currently running directory.
 		# if the output_path is invalid, then it will save the file in the currently running directory.
 		self.prefix = "lstm_output_for_" #prefix for filename
