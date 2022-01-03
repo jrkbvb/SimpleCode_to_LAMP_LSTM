@@ -17,7 +17,7 @@ from input_template_alternate_to_sc import UserInputArgs, PlottingArgs, DataInfo
 from load_and_standardize_alternate_to_sc import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
-from save_lstm_results import save_lstm_results
+from save_lstm_results_alternate_to_sc import save_lstm_results
 from unstandardize_all_data import unstandardize_all_data
 import matplotlib.pyplot as plt
 

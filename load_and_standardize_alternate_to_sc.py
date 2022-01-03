@@ -28,7 +28,7 @@ def load_and_standardize(simple_filenames, lamp_filenames, args, std_factors=Non
 	lstm_inputs, target_outputs = load_fullseries(args.input_size, args, simple_filenames, lamp_filenames)
 	num_datasets = lstm_inputs.shape[0]
 	flag=False
-	lstm_inputs[:,:,0] += 2
+	lstm_inputs[:,:,0] += np.mean(target_outputs[:,:,0])
 	if std_factors==None:
 		flag = True
 		zcg_glob_mean = np.mean(lstm_inputs[:, :, 0])
