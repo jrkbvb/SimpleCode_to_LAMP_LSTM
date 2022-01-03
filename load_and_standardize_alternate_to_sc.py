@@ -13,7 +13,7 @@ def load_fullseries(num_inputs, args, simple_filenames, lamp_filenames):
 			wave_data = wave_content[:-num_truncate, 1:2]
 		else:
 			wave_data = np.loadtxt(lamp_filename + ".wave_grid")[:-num_truncate, :]
-		simple_content = np.loadtxt(simple_filename + ".mot",skiprows=1)
+		simple_content = np.loadtxt(simple_filename + ".txt",skiprows=1)
 		lamp_content = np.loadtxt(lamp_filename + ".mot", skiprows=3)
 		simple_data = simple_content[:-num_truncate, [1,2]] # the 1 and 2 columns (2nd and 3rd) are Zcg and Pitch	
 		column_of_zeros = np.zeros((simple_data.shape[0], 1))									
