@@ -7,18 +7,19 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset
-from plot_lstm_results import plot_lstm_results
+from plot_lstm_results_no_titles import plot_lstm_results
 from network_models import LSTM
 from train_test import train, test
 from S2LDataset import S2LDataset
 from print_error_report import print_error_report
 #On the line below, specifiy after "from" which file the user inputs are coming from.
-from input_test_bimodal2 import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
+from input_samsplots import UserInputArgs, PlottingArgs, DataInfoArgs, SaveDataArgs, DerivedArgs
 from load_and_standardize import load_and_standardize
 from reshape_for_time_resolution import reshape_for_time_resolution, reshape_full_series
 from save_lstm import save_lstm_info, load_lstm_info
 from save_lstm_results import save_lstm_results
 from unstandardize_all_data import unstandardize_all_data
+import matplotlib.pyplot as plt
 
 print("Cuda available:", torch.cuda.is_available())
 if torch.cuda.is_available():
