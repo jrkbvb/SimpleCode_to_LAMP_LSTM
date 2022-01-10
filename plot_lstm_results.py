@@ -24,6 +24,9 @@ def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, 
 		error_plot(test_target[i], test_lstm_output[i], test_sc[i], plot_args, data_info_args.test_sc[i], std_factors)
 
 	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args, std_factors)
+
+	histogram_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args)
+
 	plt.draw()
 
 
@@ -248,12 +251,64 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	axs3[1].axes.set_aspect('equal')
 	axs3[2].axes.set_aspect('equal')
 	
+def add_to_histo_list(data, zcg_list, roll_list, pitch_list):
+	zcg_peak_idx, roll_peak_idx, pitch_peak_idx = peak_errors_scatter_plot(data[600:,:])
+	zcg_list.extend(data[zcg_peak_idx,0])
+	roll_list.extend(data[roll_peak_idx,1])
+	pitch_list.extend(data[pitch_peak_idx,2])
 
-	
-	
-	
+	# zcg_list.extend(data[:,0])
+	# roll_list.extend(data[:,1])
+	# pitch_list.extend(data[:,2])
 
+def histogram_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_simple_data, val_simple_data, test_simple_data, plot_args, data_info_args):
+	lamp_zcg_histo_list = []
+	lamp_roll_histo_list = []
+	lamp_pitch_histo_list = []
+	sc_zcg_histo_list = []
+	sc_roll_histo_list = []
+	sc_pitch_histo_list = []
+	lstm_zcg_histo_list = []
+	lstm_roll_histo_list = []
+	lstm_pitch_histo_list = []
 	
+	print("Plotting the histogram plot for")
+	for i in plot_args.histo_ID_list_train:
+		print(data_info_args.train_sc[i])
+		add_to_histo_list(train_target[i], 			lamp_zcg_histo_list, lamp_roll_histo_list, lamp_pitch_histo_list)
+		add_to_histo_list(train_simple_data[i],   	sc_zcg_histo_list,   sc_roll_histo_list,   sc_pitch_histo_list)
+		add_to_histo_list(train_lstm_output[i], 	lstm_zcg_histo_list, lstm_roll_histo_list, lstm_pitch_histo_list)
+		
+	for i in plot_args.histo_ID_list_val:
+		print(data_info_args.val_sc[i])
+		add_to_histo_list(val_target[i], 		lamp_zcg_histo_list, lamp_roll_histo_list, lamp_pitch_histo_list)
+		add_to_histo_list(val_simple_data[i],   sc_zcg_histo_list,   sc_roll_histo_list,   sc_pitch_histo_list)
+		add_to_histo_list(val_lstm_output[i], 	lstm_zcg_histo_list, lstm_roll_histo_list, lstm_pitch_histo_list)
+
+	for i in plot_args.histo_ID_list_test:
+		print(data_info_args.test_sc[i])
+		add_to_histo_list(test_target[i], 		lamp_zcg_histo_list, lamp_roll_histo_list, lamp_pitch_histo_list)
+		add_to_histo_list(test_simple_data[i], 	sc_zcg_histo_list,   sc_roll_histo_list,   sc_pitch_histo_list)
+		add_to_histo_list(test_lstm_output[i], 	lstm_zcg_histo_list, lstm_roll_histo_list, lstm_pitch_histo_list)
+
+	zcg_min = min(sc_zcg_histo_list + lamp_zcg_histo_list + lstm_zcg_histo_list)
+	zcg_max = max(sc_zcg_histo_list + lamp_zcg_histo_list + lstm_zcg_histo_list)
+	roll_min = min(sc_roll_histo_list + lamp_roll_histo_list + lstm_roll_histo_list)
+	roll_max = max(sc_roll_histo_list + lamp_roll_histo_list + lstm_roll_histo_list)
+	pitch_min = min(sc_pitch_histo_list + lamp_pitch_histo_list + lstm_pitch_histo_list)
+	pitch_max = max(sc_pitch_histo_list  + lamp_pitch_histo_list + lstm_pitch_histo_list)
+	n_bins = 20
+	fig4, axs4 = plt.subplots(3, 3, sharey='row', tight_layout=True)
+	density_bool = False
+	axs4[0,0].hist(sc_zcg_histo_list, bins=n_bins, color=plot_args.simple_color, range=(zcg_min, zcg_max), density=density_bool)
+	axs4[0,1].hist(lamp_zcg_histo_list, bins=n_bins, color=plot_args.lamp_color, range=(zcg_min, zcg_max), density=density_bool)
+	axs4[0,2].hist(lstm_zcg_histo_list, bins=n_bins, color=plot_args.lstm_color, range=(zcg_min, zcg_max), density=density_bool)
+	axs4[1,0].hist(sc_roll_histo_list, bins=n_bins, color=plot_args.simple_color, range=(roll_min, roll_max), density=density_bool)
+	axs4[1,1].hist(lamp_roll_histo_list, bins=n_bins, color=plot_args.lamp_color, range=(roll_min, roll_max), density=density_bool)
+	axs4[1,2].hist(lstm_roll_histo_list, bins=n_bins, color=plot_args.lstm_color, range=(roll_min, roll_max), density=density_bool)
+	axs4[2,0].hist(sc_pitch_histo_list, bins=n_bins, color=plot_args.simple_color, range=(pitch_min, pitch_max), density=density_bool)
+	axs4[2,1].hist(lamp_pitch_histo_list, bins=n_bins, color=plot_args.lamp_color, range=(pitch_min, pitch_max), density=density_bool)
+	axs4[2,2].hist(lstm_pitch_histo_list, bins=n_bins, color=plot_args.lstm_color, range=(pitch_min, pitch_max), density=density_bool)
 
 
 
