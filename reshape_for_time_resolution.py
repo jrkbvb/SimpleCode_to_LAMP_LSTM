@@ -19,12 +19,12 @@ def reshape_for_time_resolution(lstm_inputs, target_outputs, args):
 	num_truncate = lstm_inputs.shape[1]%args.time_res
 	end_idx = lstm_inputs.shape[1] - num_truncate
 	data = lstm_inputs[:, :end_idx, :].reshape(-1, end_idx//args.time_res, args.input_size, order='F')
-	labels = target_outputs[:, :end_idx, :].reshape(-1, end_idx//args.time_res, 3, order='F')
+	labels = target_outputs[:, :end_idx, :].reshape(-1, end_idx//args.time_res, args.output_size, order='F')
 	return data, labels
 
 def reshape_full_series(lstm_inputs, target_outputs, lstm_outputs, args):
 	num_realizations = lstm_inputs.shape[0]//args.time_res
 	data = lstm_inputs.reshape(num_realizations,-1, args.input_size, order='F')
-	labels = target_outputs.reshape(num_realizations,-1, 3, order='F')
-	outputs = lstm_outputs.reshape(num_realizations, -1, 3, order='F')
+	labels = target_outputs.reshape(num_realizations,-1, args.output_size, order='F')
+	outputs = lstm_outputs.reshape(num_realizations, -1, args.output_size, order='F')
 	return data, labels, outputs

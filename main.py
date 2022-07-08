@@ -126,9 +126,9 @@ val_input,   val_target, val_lstm_output 	= reshape_full_series(val_input,   val
 test_input,  test_target, test_lstm_output 	= reshape_full_series(test_input,  test_target,  test_lstm_output, args)
 
 #Unstandardize
-train_sc, train_target, train_lstm_output = unstandardize_all_data(train_sc, train_target, train_lstm_output, std_factors, data_info_args.train_sc, data_info_args.train_lamp)
-val_sc, val_target, val_lstm_output = unstandardize_all_data(val_sc, val_target, val_lstm_output, std_factors, data_info_args.val_sc, data_info_args.val_lamp)
-test_sc, test_target, test_lstm_output = unstandardize_all_data(test_sc, test_target, test_lstm_output, std_factors, data_info_args.test_sc, data_info_args.test_lamp)
+train_target, train_lstm_output = unstandardize_all_data(train_target, train_lstm_output, std_factors, args)
+val_target, val_lstm_output = unstandardize_all_data(val_target, val_lstm_output, std_factors, args)
+test_target, test_lstm_output = unstandardize_all_data(test_target, test_lstm_output, std_factors, args)
 
 #Print Final Errors
 print("\nSimpleCode Error Results:")
@@ -140,6 +140,6 @@ print_error_report(train_lstm_output, val_lstm_output, test_lstm_output, train_t
 plot_lstm_results(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc[:,:realization_length,:], val_sc[:,:realization_length,:], test_sc[:,:realization_length,:], plot_args, data_info_args, std_factors)
 
 #Save Results
-save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args, std_factors)
+save_lstm_results(train_lstm_output, val_lstm_output, test_lstm_output, save_data_args, data_info_args, args, std_factors)
 
 plt.show()

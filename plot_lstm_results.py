@@ -25,7 +25,7 @@ def plot_lstm_results(train_target, val_target, test_target, train_lstm_output, 
 
 	maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args, std_factors)
 
-	histogram_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args)
+	# histogram_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_sc, val_sc, test_sc, plot_args, data_info_args)
 
 	plt.draw()
 
@@ -153,8 +153,6 @@ def error_plot(lamp_data, lstm_data, simple_data, plot_args, sc_filepath, std_fa
 
 
 def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_lstm_output, test_lstm_output, train_simple_data, val_simple_data, test_simple_data, plot_args, data_info_args, std_factors):
-	#un-standardize the data
-	
 	num_realizations = len(plot_args.maxima_ID_list_train) + len(plot_args.maxima_ID_list_val) + len(plot_args.maxima_ID_list_test)
 	if num_realizations==0:
 		return
@@ -165,7 +163,7 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 	j = 0
 	for i in plot_args.maxima_ID_list_train:
 		sc_filepath = data_info_args.train_sc[i]
-		realization_length = lstm_data.shape[0]
+		# realization_length = lstm_data.shape[1]
 		# simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
 		simple_data[j] = np.copy(train_simple_data[i])
 		lamp_data[j] = np.copy(train_target[i])
@@ -175,9 +173,9 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 
 	for i in plot_args.maxima_ID_list_val:
 		sc_filepath = data_info_args.val_sc[i]
-		realization_length = lstm_data.shape[0]
+		# realization_length = lstm_data.shape[1]
 		# simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
-		simple_data[j] = np.copy(train_simple_data[i])
+		simple_data[j] = np.copy(val_simple_data[i])
 		lamp_data[j] = np.copy(val_target[i])
 		lstm_data[j] = np.copy(val_lstm_output[i])
 		j+=1
@@ -185,15 +183,15 @@ def maxima_plot(train_target, val_target, test_target, train_lstm_output, val_ls
 
 	for i in plot_args.maxima_ID_list_test:
 		sc_filepath = data_info_args.test_sc[i]
-		realization_length = lstm_data.shape[0]
+		# realization_length = lstm_data.shape[1]
 		# simple_data[j] = np.loadtxt(sc_filepath + ".mot",skiprows=2)[:realization_length,[3,4,5]]
-		simple_data[j] = np.copy(train_simple_data[i])
+		simple_data[j] = np.copy(test_simple_data[i])
 		lamp_data[j] = np.copy(test_target[i])
 		lstm_data[j] = np.copy(test_lstm_output[i])
 		j+=1
 	j3 = j
 
-	time_vector = [i/10 for i in range(lstm_data.shape[1])]
+	# time_vector = [i/10 for i in range(lstm_data.shape[1])]
 
 	max_zcg_lamp 		= np.max(np.abs(lamp_data[:,:,0]), axis=1)
 	max_roll_lamp 		= np.max(np.abs(lamp_data[:,:,1]), axis=1)

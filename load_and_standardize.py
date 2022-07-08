@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-def load_fullseries(num_inputs, args, simple_filenames, lamp_filenames):
+def load_fullseries(args, simple_filenames, lamp_filenames):
 	lstm_inputs = []
 	target_outputs = []
 	num_files = len(simple_filenames)
@@ -13,50 +13,61 @@ def load_fullseries(num_inputs, args, simple_filenames, lamp_filenames):
 			wave_data = wave_content[:-num_truncate, 1:2]
 		else:
 			wave_data = np.loadtxt(lamp_filename + ".wave_grid")[:-num_truncate, :]
-		simple_content = np.loadtxt(simple_filename + ".mot",skiprows=2)
-		lamp_content = np.loadtxt(lamp_filename + ".mot", skiprows=3)
-		simple_data = simple_content[:-num_truncate, [3,4,5]] # the 3,4,and 5 columns (4th, 5th, and 6th) are Zcg, roll, and Pitch										
-		lamp_data = lamp_content[:-num_truncate, [3,4,5]]
-		lstm_inputs.append(np.concatenate((simple_data, wave_data), axis=1))
-		target_outputs.append(lamp_data)
+
+		simple_motion_content = np.loadtxt(simple_filename + ".mot",skiprows=2)
+		lamp_motion_content = np.loadtxt(lamp_filename + ".mot", skiprows=3)
+		simple_vbm_content = np.loadtxt(simple_filename + ".vbm", skiprows=2)
+		lamp_vbm_content = np.loadtxt(lamp_filename + ".vbm", skiprows=4)
+
+		simple_motion_data = simple_motion_content[:-num_truncate, [3,4,5]] # the 3,4,and 5 columns (4th, 5th, and 6th) are Zcg, roll, and Pitch										
+		lamp_motion_data = lamp_motion_content[:-num_truncate, [3,4,5]]
+		simple_vbm_data = simple_vbm_content[:-num_truncate, 2:3]
+		lamp_vbm_data = lamp_vbm_content[:-num_truncate, 2:3]
+
+		lstm_inputs.append(np.concatenate((simple_vbm_data, simple_motion_data, wave_data), axis=1))
+		target_outputs.append(np.concatenate((lamp_vbm_data, lamp_motion_data), axis=1))
 	lstm_inputs = np.asarray(lstm_inputs)
 	target_outputs = np.asarray(target_outputs)	
 	return lstm_inputs, target_outputs
 
-def load_and_standardize(simple_filenames, lamp_filenames, args, std_factors=None):
-	lstm_inputs, target_outputs = load_fullseries(args.input_size, args, simple_filenames, lamp_filenames)
-	num_datasets = lstm_inputs.shape[0]
-	flag=False
-	if std_factors==None:
-		flag = True
-		zcg_glob_mean = np.mean(lstm_inputs[:, :, 0])
-		zcg_glob_std = np.std(lstm_inputs[:, :, 0])
-		roll_glob_mean = np.mean(lstm_inputs[:, :, 1])
-		roll_glob_std = np.std(lstm_inputs[:, :, 1])
-		if roll_glob_std<=.00001:
-			roll_glob_std = 1
-		pitch_glob_mean = np.mean(lstm_inputs[:, :, 2])
-		pitch_glob_std = np.std(lstm_inputs[:, :, 2])
-		wave_glob_mean = np.mean(lstm_inputs[:, :, 3:])
-		wave_glob_std  = np.std(lstm_inputs[:, :, 3:])
-		std_factors = [zcg_glob_mean, zcg_glob_std, roll_glob_mean, roll_glob_std, pitch_glob_mean, pitch_glob_std, wave_glob_mean, wave_glob_std]
-	for i in range(num_datasets):		
-		lstm_inputs[i:i+1,:,0] = (lstm_inputs[i:i+1,:,0]-std_factors[0])/std_factors[1]
-		target_outputs[i:i+1,:,0]   = (target_outputs[i:i+1,:,0]-std_factors[0])/std_factors[1]
-		lstm_inputs[i:i+1,:,1] = (lstm_inputs[i:i+1,:,1]-std_factors[2])/std_factors[3]
-		target_outputs[i:i+1,:,1]   = (target_outputs[i:i+1,:,1]-std_factors[2])/std_factors[3]
-		lstm_inputs[i:i+1,:,2] = (lstm_inputs[i:i+1,:,2]-std_factors[4])/std_factors[5]
-		target_outputs[i:i+1,:,2]   = (target_outputs[i:i+1,:,2]-std_factors[4])/std_factors[5]
-		lstm_inputs[i:i+1,:,3:] = (lstm_inputs[i:i+1,:,3:]-std_factors[6])/std_factors[7]
-
-	sc_inputs = lstm_inputs[:,:,:3]
-
-	if args.input_option==1:
-		lstm_inputs = lstm_inputs[:,:,:3]
-	elif args.input_option==2:
-		lstm_inputs = lstm_inputs[:,:,3:]
+def load_and_standardize(simple_filenames, lamp_filenames, args, std_factors=[]):
+	#lstm_inputs and target_ouputs have 3 dimensions. 1st = record number; 2nd = time index; 3rd = channel
+	lstm_inputs, target_outputs = load_fullseries(args, simple_filenames, lamp_filenames)
+	
+	sc_indexing = [args.input_vbm, args.input_3dof, args.input_3dof, args.input_3dof, False] #exclude waves
+	input_indexing = [args.input_vbm, args.input_3dof, args.input_3dof, args.input_3dof, args.input_waves]
+	output_indexing = [args.output_vbm, args.output_3dof, args.output_3dof, args.output_3dof]
+	sc_inputs = np.copy(lstm_inputs[:,:,sc_indexing]) #exclude waves
+	lstm_inputs = lstm_inputs[:,:,input_indexing]
+	target_outputs = target_outputs[:,:,output_indexing]
 	print("full series simple (input) shape ", lstm_inputs.shape)
 	print("full series lamp (target) shape ", target_outputs.shape)
+
+	num_datasets = lstm_inputs.shape[0]
+	flag=False
+	#get standardization factors if we don't have them already
+	if len(std_factors)==0:
+		flag = True
+		for i in range(args.input_size):
+			my_mean = np.mean(lstm_inputs[:,:, i])
+			my_std  = np.std(lstm_inputs[:,:, i])
+			if my_std<=.00001:
+				my_std = 1
+			std_factors.append(my_mean)
+			std_factors.append(my_std)
+		for i in range(args.output_size):
+			my_mean = np.mean(target_outputs[:,:, i])
+			my_std  = np.std(target_outputs[:,:, i])
+			if my_std<=.00001:
+				my_std = 1
+			std_factors.append(my_mean)
+			std_factors.append(my_std)
+	
+	#peform standardization on inputs and targets
+	for i in range(args.input_size):
+		lstm_inputs[:,:,i] = (lstm_inputs[:,:,i]-std_factors[2*i])/std_factors[2*i+1]
+	for i in range(args.output_size):
+		target_outputs[:,:,i] = (target_outputs[:,:,i]-std_factors[2*args.input_size+2*i])/std_factors[2*args.input_size+2*i+1]	
 	if flag:
 		return lstm_inputs, target_outputs, std_factors, sc_inputs
 	else:

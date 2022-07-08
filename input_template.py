@@ -6,16 +6,22 @@ class UserInputArgs(object):
 		#always used if training_mode=True. Specify something else if you want and training_mode=False.
 		self.model_save_filename = "recently_trained_model" #the name of the file that will be saved as class SavedLSTM.
 		#model is only saved when training_mode=True
-		self.input_option = 3 #1=Just SimpleCode; 2=Just Wave Height; 3=SimpleCode and Wave Height
+
+		self.input_vbm = False # True to include SC vbm as input
+		self.input_3dof = True # True to include SimpleCode 3-DOF as input
+		self.input_waves = True # True to include wave height as input. Relies on wave_grid_x(y)_size down below
+		self.output_vbm = False # If output_vbm=True, then go turn plotting_mode to False. Plot with separate script using saved output files instead.
+		self.output_3dof = True		
+
 		self.time_res = 9 #integers only, Time resolution; 1 means every point, 2 means every other, etc.
 		self.seq_length = 17990//self.time_res
 		self.hidden_size = 30
 		self.num_layers = 2
-		self.num_batches = 6 #number of batches in each training epoch
+		self.num_batches = 108 #number of batches in each training epoch. Fewer batches=faster training but tends to worsen performance
 		self.bi_directional = False
 		self.dropout = 0
 		self.lr = 0.005
-		self.epochs = 100 #maximum
+		self.epochs = 500 #maximum
 		self.train_fun_hyp = [0, 0, 0] 
 		self.val_fun_hyp   = [0, 0, 0] # First index is type of loss function.
 		# Others are hyper parameters pertaining to the loss function specified.
@@ -32,20 +38,25 @@ class UserInputArgs(object):
 		self.wave_grid_y_size = 1 #must be odd. Number of points from stbd to port
 		#if both above are =1, then the center point goes at the ship CG. 
 		#if >1, then the points will be spaced such that the grid extends to the bow&stern/port&stbd.
-		#in this latter case, the center point will probably not be the ship CG.
 
-		if self.input_option==1:
-			self.input_size = 3 #Zcg, Roll, Pitch
-		elif self.input_option==2:
-			self.input_size = self.wave_grid_x_size*self.wave_grid_y_size #Wave Height
-		elif self.input_option==3:
-			self.input_size = 3 + self.wave_grid_x_size*self.wave_grid_y_size #Zcg, Roll, Pitch, & Wave Height
-		self.output_size = 3 #Zcg, Roll and Pitch; 3 by default
+		self.input_size = 0
+		if self.input_3dof==True:
+			self.input_size += 3 #Zcg, Roll, Pitch
+		if self.input_waves==True:
+			self.input_size += self.wave_grid_x_size*self.wave_grid_y_size #Wave Height inputs
+		if self.input_vbm==True:
+			self.input_size += 1
+
+		self.output_size = 0
+		if self.output_3dof == True:
+			self.output_size += 3
+		if self.output_vbm == True:
+			self.output_size += 1
 		
 
 class PlottingArgs(object):
 	def __init__(self):
-		self.plotting_mode = True #set to false to not plot anything
+		self.plotting_mode = False #set to false to not plot anything
 		'''
 		Each item in the lists below should be an integer that correlates to the index of the realization
 		that you want plotted from the DataInfo Class (see down below). For example: putting a 0 in 
@@ -59,9 +70,9 @@ class PlottingArgs(object):
 		self.error_ID_list_val        = [0]
 		self.error_ID_list_test       = [0]
 
-		self.maxima_ID_list_train     = [0,1,2] #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
-		self.maxima_ID_list_val       = [0,1,2] 
-		self.maxima_ID_list_test      = [0,1,2] 
+		self.maxima_ID_list_train     = list(range(12)) #for the scatter plot of maxima obtained. Just 1 plot for all listed here.
+		self.maxima_ID_list_val       = list(range(4))
+		self.maxima_ID_list_test      = list(range(4))
 
 		self.simple_color = "red"
 		self.lamp_color = "black"
@@ -79,6 +90,13 @@ class DataInfoArgs(object):
 		of .mot. They should also be in the same folder as the lamp files.
 		Don't include ".mot" and ".sea" at the end of the string
 		'''
+		# ---------- MODIFY ONLY THESE 4 LINES --------- #
+		training_cases_file = "cases_demo_training.txt"
+		validation_cases_file ="cases_demo_validation.txt"
+		test_cases_file = "cases_demo_test.txt"
+		path_to_files = "my_stuff_to_send_to_jarod\\" #end with \\
+		# -----------------------------------------------#
+
 		self.train_lamp = []
 		self.train_sc   = [] #sc = SimpleCode
 
@@ -88,52 +106,50 @@ class DataInfoArgs(object):
 		self.test_lamp  = []
 		self.test_sc    = []
 
-		### modify this next part as necessary to fill in the lists above ###
-		num_train_realizations = 12 #per dataset
-		num_val_realizations = 4
-		num_test_realizations = 4
-		dataset_idxs = [0]
-		num_datasets = len(dataset_idxs)
-		# path = "C:/Users/ASUS/Documents/MIT/Thesis/beam_sternquartering_oblique_waves_all/"
-		path = "C:/Users/danci/Documents/MIT/Thesis/Data_for_MIT/beam_sternquartering_oblique_waves_all/"
-		simple_prefix_list = ["flh_irreg6b-th-000", "flh_irreg6b-th_115_164-000000", "flh_irreg6b-th_115_14-000000", "flh_irreg6b-th_8_164-000000", "flh_irreg6b-th_8_14-000000", "flh_irreg6b-th_oblique-00000", "flh_irreg6b-th_sternquartering-00000"   ]
-		lamp_prefix_list = ["L2_ONRFL_", "L2_ONRFL_115_164_", "L2_ONRFL_115_14_", "L2_ONRFL_8_164_",  "L2_ONRFL_8_14_", "L2_oblique_", "L2_sternquartering_"]
-		series_numbers_list = [ ["0037", "0306", "0347", "0414", "0500", "0537", "0637", "0767", "0889", "0973", "1081", "1140", "1402", "1417", "1527", "1537", "1666", "1741", "1794", "1879"],
-					["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],
-					["2","3","4","5","6","7","9","10","11","12","13","15","17","18","19","20","21","22","23","24"],
-					["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],
-					["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"],
-					["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","20","21"],
-					["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20"]]
-		#training
-		for i in dataset_idxs:
-			simple_prefix = simple_prefix_list[i]
-			lamp_prefix   = lamp_prefix_list[i]
-			series_numbers = series_numbers_list[i]
-			for j in range(num_train_realizations):
-				self.train_sc.append(path+simple_prefix+series_numbers[j])
-				self.train_lamp.append(path+lamp_prefix+series_numbers[j])
-		#validation
-		for i in dataset_idxs:
-			simple_prefix = simple_prefix_list[i]
-			lamp_prefix   = lamp_prefix_list[i]
-			series_numbers = series_numbers_list[i]
-			for j in range(num_train_realizations,num_train_realizations+num_val_realizations):
-				self.val_sc.append(path+simple_prefix+series_numbers[j])
-				self.val_lamp.append(path+lamp_prefix+series_numbers[j])
-		#testing
-		for i in dataset_idxs:
-			simple_prefix = simple_prefix_list[i]
-			lamp_prefix   = lamp_prefix_list[i]
-			series_numbers = series_numbers_list[i]
-			for j in range(num_train_realizations+num_val_realizations,num_train_realizations+num_val_realizations+num_test_realizations):
-				self.test_sc.append(path+simple_prefix+series_numbers[j])
-				self.test_lamp.append(path+lamp_prefix+series_numbers[j])
+		### do not modify the stuff below ###
+		all_cases_files = [training_cases_file, validation_cases_file, test_cases_file]
+		for i,casesFile in enumerate(all_cases_files):
+			file = open(path_to_files+"Cases_files\\"+casesFile, 'r')
+			lines = file.readlines()
+
+			foundStars = False
+			counter = 0
+			for line in lines:
+				if foundStars==True:
+					counter+=1
+				if counter==1:
+					if line[-1]=="\n":
+						SCprefix = line[:-1] #the -1 is to exclude the line break character (\n)
+					else:
+						SCprefix = line
+				elif counter==2:
+					if line[-1]=="\n":
+						LAMPprefix = line[:-1] #the -1 is to exclude the line break character (\n)
+					else:
+						LAMPprefix = line
+				elif counter>=3:
+					if line[-1]=="\n":
+						SChandle = SCprefix + line[:-1]
+						LAMPhandle = LAMPprefix + line[:-1]
+					else:
+						SChandle = SCprefix + line
+						LAMPhandle = LAMPprefix + line
+					if i==0:
+						self.train_sc.append(path_to_files+"SimpleCode_files\\"+SChandle)
+						self.train_lamp.append(path_to_files+"LAMP_files\\"+LAMPhandle)
+					elif i==1:
+						self.val_sc.append(path_to_files+"SimpleCode_files\\"+SChandle)
+						self.val_lamp.append(path_to_files+"LAMP_files\\"+LAMPhandle)
+					elif i==2:
+						self.test_sc.append(path_to_files+"SimpleCode_files\\"+SChandle)
+						self.test_lamp.append(path_to_files+"LAMP_files\\"+LAMPhandle)
+				elif line[:3]=="***":
+					foundStars = True
 
 class SaveDataArgs(object):
 	def __init__(self):
-		self.save_data_mode = False
-		self.output_path = "C:/Users/danci/Documents/MIT/Thesis" #if the output_path="", then it will save in the currently running directory.
+		self.save_data_mode = True
+		self.output_path = "output_files\\" #if the output_path="", then it will save in the currently running directory.
 		# if the output_path is invalid, then it will save the file in the currently running directory.
 		self.prefix = "lstm_output_for_" #prefix for filename
 		#these are the indices of the training, validation, and test sets that you want the LSTM output to be saved to a text file.

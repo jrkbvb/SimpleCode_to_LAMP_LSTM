@@ -68,7 +68,8 @@ def test(model, device, val_loader, obj_fun_hyp, num_realizations=0, time_res=1,
         for (inpt,target) in val_loader:
             shape0 += np.asarray(target).shape[0]
             shape1 = np.asarray(target).shape[1]
-        saved_output = np.zeros((shape0, shape1, 3)) #3 = Zcg, roll, pitch
+            shape2 = np.asarray(target).shape[2]
+        saved_output = np.zeros((shape0, shape1, shape2))
         idx0_start = 0
 
     #don't perform backprop if testing
