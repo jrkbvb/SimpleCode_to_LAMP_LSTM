@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+
 """
 The user specifies a casesPy.txt file. For each handle in it, this script will: 
 	Create LAMP input file.
@@ -7,33 +8,58 @@ The user specifies a casesPy.txt file. For each handle in it, this script will:
 	Not repeat already generated files.
 All "default" values that are not specified by the handles can be changed in this script.
 """
+
+
 def parse_handle(handle):
-	uList = [pos for pos, char in enumerate(handle) if char == "_"] #list of underscore indices
-	uList.append(handle.rfind("-"))
-	height1 = float(handle[uList[0]+2:uList[1]])
-	period1 = float(handle[uList[1]+2:uList[2]])
-	angle1 = float(handle[uList[2]+2:uList[3]])
-	height2 = float(handle[uList[3]+3:uList[4]])
-	period2 = float(handle[uList[4]+3:uList[5]])
-	angle2 = float(handle[uList[5]+3:uList[6]])
-	shipspeed = float(handle[uList[6]+2:uList[7]])
-	realizationIndex = handle[uList[7]+1:]
-	return height1, period1, angle1, height2, period2, angle2, shipspeed, realizationIndex
+    uList = [
+        pos for pos, char in enumerate(handle) if char == "_"
+    ]  # list of underscore indices
+    uList.append(handle.rfind("-"))
+    height1 = float(handle[uList[0] + 2 : uList[1]])
+    period1 = float(handle[uList[1] + 2 : uList[2]])
+    angle1 = float(handle[uList[2] + 2 : uList[3]])
+    height2 = float(handle[uList[3] + 3 : uList[4]])
+    period2 = float(handle[uList[4] + 3 : uList[5]])
+    angle2 = float(handle[uList[5] + 3 : uList[6]])
+    shipspeed = float(handle[uList[6] + 2 : uList[7]])
+    realizationIndex = handle[uList[7] + 1 :]
+    return (
+        height1,
+        period1,
+        angle1,
+        height2,
+        period2,
+        angle2,
+        shipspeed,
+        realizationIndex,
+    )
+
 
 def create_LAMP_input_file(LAMPhandle):
-	'''Step 1: Check to see if the appropriate input file already exists
-	Step 2: parse the SC handle to get values of significant wave height, period, speed, etc.
-	Step 3: create the input file. This is the section where other default values can be found.'''
-	path = Path("LAMP_files\\"+LAMPhandle+".in")
-	if path.is_file():
-		print(LAMPhandle + " already has an input file.")
-		return #Step 1
-	height1, period1, angle1, height2, period2, angle2, shipspeed, realizationIndex = parse_handle(LAMPhandle) #Step 2
-	# Step 3 below
-	with open("LAMP_files\\"+LAMPhandle+".in", "w") as f: 
-	#the [:-8] is to exclude the realization index from the input filename, per the norm for SC
-		f.write(
-f"""!01 DESCR - Descriptive Title (max 80 char)
+    """Step 1: Check to see if the appropriate input file already exists
+    Step 2: parse the SC handle to get values of significant wave height, period, speed, etc.
+    Step 3: create the input file. This is the section where other default values can be found."""
+    path = Path("LAMP_files\\" + LAMPhandle + ".in")
+    if path.is_file():
+        print(LAMPhandle + " already has an input file.")
+        return  # Step 1
+    (
+        height1,
+        period1,
+        angle1,
+        height2,
+        period2,
+        angle2,
+        shipspeed,
+        realizationIndex,
+    ) = parse_handle(
+        LAMPhandle
+    )  # Step 2
+    # Step 3 below
+    with open("LAMP_files\\" + LAMPhandle + ".in", "w") as f:
+        # the [:-8] is to exclude the realization index from the input filename, per the norm for SC
+        f.write(
+            f"""!01 DESCR - Descriptive Title (max 80 char)
 ONR Topsides Study - Flared variant
 !02 FPROG - Source file for programmer's input (blank for defaults)
 
@@ -65,7 +91,7 @@ LAMP_files\\{LAMPhandle}.out
 !13 (cont) XMIX  YMIX  ZMIX - mixed-source surface extent
 	450.000      225.0000      20.0
 !14 TINIT NSTEP DTH IRST - Initial Time, Number of Steps, Time Step, Restart
-	0.0   180  0.1    0
+	0.0   18000  0.1    0
 !15 USHIP  UCURNT  DCURNT  WDEPTH - Steady speed, current vel/dir, water depth
 	{shipspeed*.5114444}     0.0   0.0   0.0   
 !16 PMGIN(1:6) Initial position and orientation in global frame
@@ -144,10 +170,13 @@ $INCLUDE:LMP_ONRFL_loads_rigid.inp
 !33 NBK - Number of plate-like lifting appendages (e.g. bilge keels)
 0
  
-""")
-		if height2>0.01: #this section is for adding a secondary spectrum (bimodal seas)
-			f.write(	 
-f"""$ADDSEA:
+"""
+        )
+        if (
+            height2 > 0.01
+        ):  # this section is for adding a secondary spectrum (bimodal seas)
+            f.write(
+                f"""$ADDSEA:
 !2nd (additional) seaway definition:
 ! Short-reseted SS6 defined by Bretschneider spectrum
 !ADDSEA01 ISEA - Seaway option
@@ -159,9 +188,10 @@ f"""$ADDSEA:
 !ADDSEA02 SPEC_FREQ(2) - frequency range for discretizing wave spectrum
 	0.00000 	0.00000
  
-""")
-		f.write(
-"""!$DAMPING:
+"""
+            )
+        f.write(
+            """!$DAMPING:
 !Supplemental damping
 !DAMPING01 IVSDMP - Supplemental damping option
 !     1
@@ -179,42 +209,46 @@ $OPTIONS:
 !IEKZOPT  - option for computing exponential incident wave decay term
  IEKZOPT    0
 !MASSDISTOPT - mass distribution matching option
- MASSDISTOPT 0  ! use input mass distribution as is""")
+ MASSDISTOPT 0  ! use input mass distribution as is"""
+        )
+
 
 def run_LAMP_input_file(LAMPhandle):
-	path = Path(LAMPhandle+".mot")
-	if path.is_file():
-		return #Step 1
-	_, _, _, _, _, _, _, realizationIndex = parse_handle(LAMPhandle) #Step 2
-	command = "lamp.exe LAMP_files\\" + LAMPhandle
-	os.system(command)
-	command2 = "lmplot.exe -s get_motion.scpt -root LAMP_files\\" + LAMPhandle
-	os.system(command2)
+    path = Path(LAMPhandle + ".mot")
+    if path.is_file():
+        return  # Step 1
+    _, _, _, _, _, _, _, realizationIndex = parse_handle(LAMPhandle)  # Step 2
+    command = "lamp.exe LAMP_files\\" + LAMPhandle
+    os.system(command)
+    command2 = "lmplot.exe -s get_motion.scpt -root LAMP_files\\" + LAMPhandle
+    os.system(command2)
 
 
-#------------------ Main Script --------------------#
+# ------------------ Main Script --------------------#
 casesFile = input("Enter name of casesPy.txt file: ")
 
-file = open("Cases_files//"+casesFile, 'r')
+file = open("Cases_files//" + casesFile, "r")
 lines = file.readlines()
 
 foundStars = False
 counter = 0
 for line in lines:
-	if foundStars==True:
-		counter+=1
-	if foundStars==True and counter==2:
-		if line[-1]=="\n":
-			LAMPprefix = line[:-1] #the -1 is to exclude the line break character (\n)
-		else:
-			LAMPprefix = line
-	elif foundStars==True and counter>=3:
-		#This section is the main point of the script--> create input files and run SC
-		if line[-1]=="\n":
-			LAMPhandle = LAMPprefix + line[:-1] #again, to exclude the line break character
-		else:
-			LAMPhandle = LAMPprefix + line
-		create_LAMP_input_file(LAMPhandle)
-		run_LAMP_input_file(LAMPhandle)
-	elif line[:3]=="***":
-		foundStars = True
+    if foundStars == True:
+        counter += 1
+    if foundStars == True and counter == 2:
+        if line[-1] == "\n":
+            LAMPprefix = line[:-1]  # the -1 is to exclude the line break character (\n)
+        else:
+            LAMPprefix = line
+    elif foundStars == True and counter >= 3:
+        # This section is the main point of the script--> create input files and run SC
+        if line[-1] == "\n":
+            LAMPhandle = (
+                LAMPprefix + line[:-1]
+            )  # again, to exclude the line break character
+        else:
+            LAMPhandle = LAMPprefix + line
+        create_LAMP_input_file(LAMPhandle)
+        run_LAMP_input_file(LAMPhandle)
+    elif line[:3] == "***":
+        foundStars = True
