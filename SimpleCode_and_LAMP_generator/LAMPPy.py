@@ -1,5 +1,6 @@
 from pathlib import Path
-import os
+from multiprocessing import Pool
+import os, time
 
 """
 The user specifies a casesPy.txt file. For each handle in it, this script will: 
@@ -232,6 +233,7 @@ lines = file.readlines()
 
 foundStars = False
 counter = 0
+t = time.time()
 for line in lines:
     if foundStars == True:
         counter += 1
@@ -252,3 +254,5 @@ for line in lines:
         run_LAMP_input_file(LAMPhandle)
     elif line[:3] == "***":
         foundStars = True
+elapsed = time.time() - t
+print(f"Elapsed time is {elapsed}")

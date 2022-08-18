@@ -102,10 +102,15 @@ class DataInfoArgs(object):
         Don't include ".mot" and ".sea" at the end of the string
         """
         # ---------- MODIFY ONLY THESE 4 LINES --------- #
-        training_cases_file = "cases_demo_training.txt"
-        validation_cases_file = "cases_demo_validation.txt"
-        test_cases_file = "cases_demo_test.txt"
+        training_cases_file = "wide_training.txt"
+        validation_cases_file = "wide_validation.txt"
+        test_cases_file = "wide_test.txt"
         path_to_files = "SimpleCode_and_LAMP_generator\\"  # end with \\
+
+        # training_cases_file = "cases_demo_training.txt"
+        # validation_cases_file = "cases_demo_validation.txt"
+        # test_cases_file = "cases_demo_test.txt"
+        # path_to_files = "SimpleCode_and_LAMP_generator\\"  # end with \\
         # -----------------------------------------------#
 
         self.train_lamp = []

@@ -23,14 +23,16 @@ _h##.#_p##.#_a##.#_hh##.#_pp##.#_aa##_s##.#-REALIZATION##
 """
 
 # ------------------------ CHANGE THESE TO SET DESCRIPTION AND FILENAME -------------------------#
-description = (
-    f"This is my first experiment. This is test data.\nMy name\ncreated: "
-    + str(date.today())
+description = f"""Generation of test cases for med and wide LSTM's with varying primary height and secondary height
+    h = 5.5 - 9.5
+    hh = 1 - 5
+    """ + str(
+    date.today()
 )  # year-month-day
 
-# filename = "cases_demo_training.txt" #include .txt at the end
-# filename = "cases_demo_validation.txt"
-filename = "cases_demo_test.txt"
+filename = "linux_test.txt"  # include .txt at the end
+# filename = "cases_A_validation.txt"
+# filename = "cases_A_test.txt"
 
 # ------------------------ CHANGE THESE TO ESTABLISH PREFIXES -------------------------#
 prefix = ["SC", "LAMP"]
@@ -40,13 +42,14 @@ prefix = [string + "\n" for string in prefix]
 # Beam Seas only example
 permutations = ""
 
-# realizations = list(range(1,13))
+# realizations = [1]
+# realizations = list(range(1, 13))
 # realizations = list(range(13, 17))
 realizations = list(range(17, 21))
 
 for r in realizations:
     r_string = "0" * (7 - len(str(r))) + str(r)
-    permutations += "_h11.5_p16.4_a90_hh0_pp0_aa0_s0-" + r_string + "\n"
+    permutations += "_h11.5_p14_a90_hh0_pp0_aa0_s0-" + r_string + "\n"
 
 # ------------------------ DON'T CHANGE THESE -------------------------#
 print(f"File description is:\n{description}")

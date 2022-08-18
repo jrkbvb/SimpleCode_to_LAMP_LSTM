@@ -1,0 +1,12 @@
+Generation of test cases for med and wide LSTM's with varying primary height and secondary height
+    h = 5.5 - 9.5
+    hh = 1 - 5
+    2022-08-18
+
+***
+SC
+LAMP
+_h11.5_p14_a90_hh0_pp0_aa0_s0-0000017
+_h11.5_p14_a90_hh0_pp0_aa0_s0-0000018
+_h11.5_p14_a90_hh0_pp0_aa0_s0-0000019
+_h11.5_p14_a90_hh0_pp0_aa0_s0-0000020
