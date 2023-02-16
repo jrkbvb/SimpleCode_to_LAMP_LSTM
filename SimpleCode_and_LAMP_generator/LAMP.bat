@@ -1,8 +1,17 @@
-lamp.exe LAMP_files\LAMP_h11.5_p14_a90_hh0_pp0_aa0_s0-0000042
-lmplot.exe -s get_motion.scpt -root LAMP_files\LAMP_h11.5_p14_a90_hh0_pp0_aa0_s0-0000042
+cd "H:\OneDrive - Massachusetts Institute of Technology\Thesis\SimpleCode_to_LAMP_LSTM\SimpleCode_and_LAMP_generator"
 
-lamp.exe LAMP_files\LAMP_h11.5_p14_a90_hh0_pp0_aa0_s0-0000043
-lmplot.exe -s get_motion.scpt -root LAMP_files\LAMP_h11.5_p14_a90_hh0_pp0_aa0_s0-0000043
+:: set VAR_1=MED_expanded_training.txt
+set VAR_2=MED_expanded_validation2.txt
+set VAR_3=MED_expanded_test2.txt
 
-lamp.exe LAMP_files\LAMP_h11.5_p14_a90_hh0_pp0_aa0_s0-0000044
-lmplot.exe -s get_motion.scpt -root LAMP_files\LAMP_h11.5_p14_a90_hh0_pp0_aa0_s0-0000044
+
+:: echo %VAR_1% | python SimpleCodePy.py
+echo %VAR_2% | python LAMPPy.py
+echo %VAR_3% | python LAMPPy.py
+
+@REM echo %VAR_1% | python SimpleCodePy.py
+@REM echo %VAR_2% | python SimpleCodePy.py
+@REM echo %VAR_3% | python SimpleCodePy.py
+
+:: cd "H:\OneDrive - Massachusetts Institute of Technology\Thesis\SimpleCode_to_LAMP_LSTM"
+:: python main.py

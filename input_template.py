@@ -9,7 +9,7 @@ class UserInputArgs(object):
         )
         # always used if training_mode=True. Specify something else if you want and training_mode=False.
         self.model_save_filename = "recently_trained_model"  # the name of the file that will be saved as class SavedLSTM.
-        # model is only saved when training_mode=True
+        # model is only saved when training_mode=True, "recently_trained_model" is default
 
         self.input_vbm = False  # True to include SC vbm as input
         self.input_3dof = True  # True to include SimpleCode 3-DOF as input
@@ -19,12 +19,12 @@ class UserInputArgs(object):
 
         self.time_res = 9  # integers only, Time resolution; 1 means every point, 2 means every other, etc.
         self.seq_length = 17990 // self.time_res
-        self.hidden_size = 30
-        self.num_layers = 2
+        self.hidden_size = 30  # default 30
+        self.num_layers = 2  # default 2
         self.num_batches = 108  # number of batches in each training epoch. Fewer batches=faster training but tends to worsen performance
         self.bi_directional = False
         self.dropout = 0
-        self.lr = 0.005
+        self.lr = 0.005  # default was 0.005
         self.epochs = 500  # maximum
         self.train_fun_hyp = [0, 0, 0]
         self.val_fun_hyp = [0, 0, 0]  # First index is type of loss function.
@@ -62,7 +62,7 @@ class UserInputArgs(object):
 
 class PlottingArgs(object):
     def __init__(self):
-        self.plotting_mode = True  # set to false to not plot anything
+        self.plotting_mode = False  # set to false to not plot anything
         """
 		Each item in the lists below should be an integer that correlates to the index of the realization
 		that you want plotted from the DataInfo Class (see down below). For example: putting a 0 in 
@@ -102,15 +102,15 @@ class DataInfoArgs(object):
         Don't include ".mot" and ".sea" at the end of the string
         """
         # ---------- MODIFY ONLY THESE 4 LINES --------- #
-        training_cases_file = "wide_training.txt"
-        validation_cases_file = "wide_validation.txt"
-        test_cases_file = "wide_test.txt"
-        path_to_files = "SimpleCode_and_LAMP_generator\\"  # end with \\
+        self.training_cases_file = "MED_expanded_training2.txt"
+        self.validation_cases_file = "MED_expanded_validation2.txt"
+        self.test_cases_file = "MED_expanded_test2.txt"
+        # self.path_to_files = "Experiment_ARCHIVE\\MED LSTM\\"  # end with \\
 
         # training_cases_file = "cases_demo_training.txt"
         # validation_cases_file = "cases_demo_validation.txt"
         # test_cases_file = "cases_demo_test.txt"
-        # path_to_files = "SimpleCode_and_LAMP_generator\\"  # end with \\
+        self.path_to_files = "SimpleCode_and_LAMP_generator\\"  # end with \\
         # -----------------------------------------------#
 
         self.train_lamp = []
@@ -123,9 +123,13 @@ class DataInfoArgs(object):
         self.test_sc = []
 
         ### do not modify the stuff below ###
-        all_cases_files = [training_cases_file, validation_cases_file, test_cases_file]
+        all_cases_files = [
+            self.training_cases_file,
+            self.validation_cases_file,
+            self.test_cases_file,
+        ]
         for i, casesFile in enumerate(all_cases_files):
-            file = open(path_to_files + "Cases_files\\" + casesFile, "r")
+            file = open(self.path_to_files + "Cases_files\\" + casesFile, "r")
             lines = file.readlines()
 
             foundStars = False
@@ -156,24 +160,24 @@ class DataInfoArgs(object):
                         LAMPhandle = LAMPprefix + line
                     if i == 0:
                         self.train_sc.append(
-                            path_to_files + "SimpleCode_files\\" + SChandle
+                            self.path_to_files + "SimpleCode_files\\" + SChandle
                         )
                         self.train_lamp.append(
-                            path_to_files + "LAMP_files\\" + LAMPhandle
+                            self.path_to_files + "LAMP_files\\" + LAMPhandle
                         )
                     elif i == 1:
                         self.val_sc.append(
-                            path_to_files + "SimpleCode_files\\" + SChandle
+                            self.path_to_files + "SimpleCode_files\\" + SChandle
                         )
                         self.val_lamp.append(
-                            path_to_files + "LAMP_files\\" + LAMPhandle
+                            self.path_to_files + "LAMP_files\\" + LAMPhandle
                         )
                     elif i == 2:
                         self.test_sc.append(
-                            path_to_files + "SimpleCode_files\\" + SChandle
+                            self.path_to_files + "SimpleCode_files\\" + SChandle
                         )
                         self.test_lamp.append(
-                            path_to_files + "LAMP_files\\" + LAMPhandle
+                            self.path_to_files + "LAMP_files\\" + LAMPhandle
                         )
                 elif line[:3] == "***":
                     foundStars = True
@@ -187,7 +191,7 @@ class SaveDataArgs(object):
         self.prefix = "lstm_output_for_"  # prefix for filename
         # these are the indices of the training, validation, and test sets that you want the LSTM output to be saved to a text file.
         self.train = [0]
-        self.val = [0, 1]
+        self.val = [0]
         self.test = [0, 1, 2]
 
 

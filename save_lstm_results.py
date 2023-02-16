@@ -29,7 +29,7 @@ def save_data(filename, output, save_data_args, args, time_vector):
 		print("The user specified output_path did not have a \\ at the end, so I added one")
 	try:
 		np.savetxt(save_data_args.output_path + filename, np.concatenate((time_vector[:output.shape[0]], output),axis=1), fmt="%.5f" ,delimiter='     ', header=my_header)
-		print("Successfully saved output in ", save_data_args.output_path + filename)
+		# print("Successfully saved output in ", save_data_args.output_path + filename)
 	except:
 		print("Error saving file (possibly the output path). Attempting to save in current directory")
 		print("output path is: ", save_data_args.output_path)
@@ -39,5 +39,10 @@ def save_data(filename, output, save_data_args, args, time_vector):
 		except:
 			print("Failed to save file called ", filename)
 
-
+def save_lstm_test_results(test_lstm_output, save_data_args, data_info_args, args, std_factors):
+	for i in save_data_args.test:
+		x = data_info_args.test_sc[i].rfind("\\") + 1 
+		filename = save_data_args.prefix + data_info_args.test_sc[i][x:] + ".txt"
+		time_vector = np.loadtxt(data_info_args.test_sc[i] + ".mot",skiprows=2)[:,0:1]
+		save_data(filename, test_lstm_output[i,:,:], save_data_args, args, time_vector)
 

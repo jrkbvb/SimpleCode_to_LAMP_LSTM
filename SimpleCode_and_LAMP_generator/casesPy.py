@@ -23,16 +23,18 @@ _h##.#_p##.#_a##.#_hh##.#_pp##.#_aa##_s##.#-REALIZATION##
 """
 
 # ------------------------ CHANGE THESE TO SET DESCRIPTION AND FILENAME -------------------------#
-description = f"""Generation of test cases for med and wide LSTM's with varying primary height and secondary height
-    h = 5.5 - 9.5
-    hh = 1 - 5
+description = f"""MED LSTM with Expanded training set to cover the entire range of conditions
+    wave_height = [5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5]
+    period = [11, 12, 13, 14, 15, 16, 17, 18, 19]
+    sea_heading = list(range(0,360,15))
+    speed = list(range(2,18,2))
     """ + str(
     date.today()
 )  # year-month-day
 
-filename = "linux_test.txt"  # include .txt at the end
-# filename = "cases_A_validation.txt"
-# filename = "cases_A_test.txt"
+# filename = "MED_expanded_training.txt"  # include .txt at the end
+# filename = "MED_expanded_validation.txt"
+filename = "MED_expanded_test.txt"
 
 # ------------------------ CHANGE THESE TO ESTABLISH PREFIXES -------------------------#
 prefix = ["SC", "LAMP"]
@@ -42,14 +44,14 @@ prefix = [string + "\n" for string in prefix]
 # Beam Seas only example
 permutations = ""
 
-# realizations = [1]
+realizations = [1]
 # realizations = list(range(1, 13))
 # realizations = list(range(13, 17))
-realizations = list(range(17, 21))
+# realizations = list(range(17, 21))
 
 for r in realizations:
     r_string = "0" * (7 - len(str(r))) + str(r)
-    permutations += "_h11.5_p14_a90_hh0_pp0_aa0_s0-" + r_string + "\n"
+    permutations += "_h7.5_p15_a135_hh3_pp20_aa0_s8-" + r_string + "\n"
 
 # ------------------------ DON'T CHANGE THESE -------------------------#
 print(f"File description is:\n{description}")

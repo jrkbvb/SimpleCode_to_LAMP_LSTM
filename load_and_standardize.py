@@ -10,6 +10,7 @@ def load_fullseries(args, simple_filenames, lamp_filenames):
     for k in range(num_files):
         simple_filename = simple_filenames[k]
         lamp_filename = lamp_filenames[k]
+        # print(f"LAMP/SC FILE: {lamp_filename}")
         if args.wave_grid_x_size == 1 and args.wave_grid_y_size == 1:
             wave_content = np.loadtxt(lamp_filename + ".wav", skiprows=3)
             wave_data = wave_content[:-num_truncate, 1:2]
@@ -27,6 +28,11 @@ def load_fullseries(args, simple_filenames, lamp_filenames):
         lamp_motion_data = lamp_motion_content[:-num_truncate, [3, 4, 5]]
         simple_vbm_data = simple_vbm_content[:-num_truncate, 2:3]
         lamp_vbm_data = lamp_vbm_content[:-num_truncate, 2:3]
+
+        # print(f"simple_vbm_data: {simple_vbm_data.shape}")
+        # print(f"simple_motion_data: {simple_motion_data.shape}")
+        # print(f"wave_data: {wave_data.shape}")
+        # print("\n")
 
         lstm_inputs.append(
             np.concatenate((simple_vbm_data, simple_motion_data, wave_data), axis=1)

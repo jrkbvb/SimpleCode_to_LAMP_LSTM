@@ -241,6 +241,10 @@ plot_lstm_results(
     std_factors,
 )
 
+# Change save_data_args.test to a list of equal length to cases_file tests
+save_data_args.test = list(range(0, len(data_info_args.test_sc)))
+print(len(save_data_args.test))
+
 # Save Results
 save_lstm_results(
     train_lstm_output,

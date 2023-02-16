@@ -193,6 +193,7 @@ def run_SC_input_file(SChandle):
 # ------------------ Main Script --------------------#
 casesFile = input("Enter name of casesPy.txt file: ")
 
+
 file = open("Cases_files\\" + casesFile, "r")
 lines = file.readlines()
 

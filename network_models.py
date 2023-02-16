@@ -14,6 +14,8 @@ class LSTM(nn.Module):
         #the above is the default when not specified. Leave it commented out.
 
     def forward(self, input_seq):
+        # to avoid error
+        self.lstm.flatten_parameters()
         # input_seq: batch_size, seq_length, input_size
         lstm_out, _ = self.lstm(input_seq)
         # lstm_out: batch_size, seq_length, hidden_size 
